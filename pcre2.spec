@@ -77,7 +77,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 # Because of multilib patch
-libtoolize --copy --force && autoreconf -vif
+libtoolize --copy --force
+autoreconf -vif
 
 %build
 # There is a strict-aliasing problem on PPC64, bug #881232
