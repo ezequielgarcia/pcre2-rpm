@@ -21,7 +21,7 @@ Patch0:     pcre2-10.10-Fix-multilib.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
-BuildRequires:  glibc-headers
+BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  make
 BuildRequires:  readline-devel
@@ -48,7 +48,7 @@ restricted, and does not give full access to all of PCRE2's facilities.
 Summary:    Development files for %{name}
 Group:      Development/Libraries
 Requires:   %{name}%{?_isa} = %{version}-%{release}
-Requires:   glibc-headers
+Requires:   gcc
 
 %description devel
 Development files (headers, libraries for dynamic linking, documentation)
@@ -156,6 +156,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Fri Jun 19 2015 Petr Pisar <ppisar@redhat.com> - 10.20-0.1.RC1
 - 10.20-RC1 bump
+- Replace dependency on glibc-headers with gcc (bug #1230479)
 
 * Thu Jun 18 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 10.10-3.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
