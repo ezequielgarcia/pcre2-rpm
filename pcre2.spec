@@ -16,6 +16,8 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# Preserve soname, in upstream after 10.20-RC1
+Patch1:     pcre2-10.20-RC1-Correct-library-version-number.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -76,6 +78,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
+%patch1 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -157,6 +160,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Fri Jun 19 2015 Petr Pisar <ppisar@redhat.com> - 10.20-0.1.RC1
 - 10.20-RC1 bump
 - Replace dependency on glibc-headers with gcc (bug #1230479)
+- Preserve soname
 
 * Thu Jun 18 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 10.10-3.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
