@@ -19,6 +19,9 @@ Patch0:     pcre2-10.10-Fix-multilib.patch
 # Fix compiling classes with a negative escape and a property escape,
 # upstream bug #1697, fixed in upstream after 10.20.
 Patch1:     pcre2-10.20-Fix-compiler-bug-for-classes-such-as-W-p-Any.patch
+# Fix integer overflow for patterns whose minimum matching length is large,
+# upstream bug #1699, fixed in upstream after 10.20.
+Patch2:     pcre2-10.20-Fix-integer-overflow-for-patterns-whose-minimum-matc.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -80,6 +83,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -161,6 +165,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Mon Oct 12 2015 Petr Pisar <ppisar@redhat.com> - 10.20-2
 - Fix compiling classes with a negative escape and a property escape
   (upstream bug #1697)
+- Fix integer overflow for patterns whose minimum matching length is large
+  (upstream bug #1699)
 
 * Fri Jul 03 2015 Petr Pisar <ppisar@redhat.com> - 10.20-1
 - 10.20 bump
