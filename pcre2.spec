@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.20
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -22,6 +22,9 @@ Patch1:     pcre2-10.20-Fix-compiler-bug-for-classes-such-as-W-p-Any.patch
 # Fix integer overflow for patterns whose minimum matching length is large,
 # upstream bug #1699, fixed in upstream after 10.20.
 Patch2:     pcre2-10.20-Fix-integer-overflow-for-patterns-whose-minimum-matc.patch
+# Fix compiling patterns with PCRE2_NO_AUTO_CAPTURE, upstream bug #1704,
+# fixed in upstream after 10.20.
+Patch3:     pcre2-10.20-Fix-PCRE2_NO_AUTO_CAPTURE-bug.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -84,6 +87,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -162,6 +166,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Oct 26 2015 Petr Pisar <ppisar@redhat.com> - 10.20-3
+- Fix compiling patterns with PCRE2_NO_AUTO_CAPTURE (upstream bug #1704)
+
 * Mon Oct 12 2015 Petr Pisar <ppisar@redhat.com> - 10.20-2
 - Fix compiling classes with a negative escape and a property escape
   (upstream bug #1697)
