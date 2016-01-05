@@ -1,13 +1,15 @@
-# This is stable release:
-#%%global rcversion RC1
+# This is not stable release:
+%global rcversion RC1
 Name:       pcre2
-Version:    10.20
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Version:    10.21
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
 # the library:                          BSD
 # pcre2test (linked to GNU readline):   BSD (linked to GPLv3+)
+# COPYING:                              GPLv3 text (a mistake
+#   <https://lists.exim.org/lurker/message/20160105.155106.d2c85abf.en.html>)
 #Not distributed in binary package
 # autotools:                            GPLv3+ with exception
 # install-sh:                           MIT
@@ -16,15 +18,6 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Fix compiling classes with a negative escape and a property escape,
-# upstream bug #1697, fixed in upstream after 10.20.
-Patch1:     pcre2-10.20-Fix-compiler-bug-for-classes-such-as-W-p-Any.patch
-# Fix integer overflow for patterns whose minimum matching length is large,
-# upstream bug #1699, fixed in upstream after 10.20.
-Patch2:     pcre2-10.20-Fix-integer-overflow-for-patterns-whose-minimum-matc.patch
-# Fix compiling patterns with PCRE2_NO_AUTO_CAPTURE, upstream bug #1704,
-# fixed in upstream after 10.20.
-Patch3:     pcre2-10.20-Fix-PCRE2_NO_AUTO_CAPTURE-bug.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -85,9 +78,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -108,6 +98,7 @@ autoreconf -vif
     --disable-bsr-anycrlf \
     --disable-coverage \
     --disable-ebcdic \
+    --disable-never-backslash-C \
     --enable-newline-is-lf \
     --enable-pcre2-8 \
     --enable-pcre2-16 \
@@ -166,6 +157,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Jan 05 2016 Petr Pisar <ppisar@redhat.com> - 10.21-0.1.RC1
+- 10.21-RC1 bump
+
 * Mon Oct 26 2015 Petr Pisar <ppisar@redhat.com> - 10.20-3
 - Fix compiling patterns with PCRE2_NO_AUTO_CAPTURE (upstream bug #1704)
 
