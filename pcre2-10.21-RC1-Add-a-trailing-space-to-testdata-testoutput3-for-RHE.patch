@@ -1,0 +1,33 @@
+From db3b9ca6555fa002eaee742fa650665d16b4eec2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Petr=20P=C3=ADsa=C5=99?= <ppisar@redhat.com>
+Date: Wed, 6 Jan 2016 12:42:11 +0100
+Subject: [PATCH] Add a trailing space to testdata/testoutput3 for RHEL-7
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Frech locale test 3 is expected to match testdata/testoutput3 on
+RHEL-7 glibc. But it's missing a trailing space that was added into
+testdata/testoutput3A only.
+
+Signed-off-by: Petr P√≠sa≈ô <ppisar@redhat.com>
+---
+ testdata/testoutput3 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/testdata/testoutput3 b/testdata/testoutput3
+index d9e8c5c..77e3d75 100644
+--- a/testdata/testoutput3
++++ b/testdata/testoutput3
+@@ -104,7 +104,7 @@ Subject length lower bound = 1
+ /^[\xc8-\xc9]/
+     …cole
+  0: …
+-\= Expect no match
++\= Expect no match 
+     Ècole
+ No match
+ 
+-- 
+2.5.0
+
