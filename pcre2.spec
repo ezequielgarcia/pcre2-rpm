@@ -22,6 +22,9 @@ Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:T
 Patch0:     pcre2-10.10-Fix-multilib.patch
 # Report unmatched closing parantheses properly, in upstream after 10.21
 Patch1:     pcre2-10.21-Detect-unmatched-closing-parentheses-in-the-pre-scan.patch
+# Fix pcre2test for expressions with a callout inside a look-behind assertion,
+# upstream bug #1783, fixed in upstream after 10.21
+Patch2:     pcre2-10.21-Fix-pcre2test-loop-when-a-callout-is-in-an-initial-l.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -83,6 +86,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -164,6 +168,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Thu Feb 11 2016 Petr Pisar <ppisar@redhat.com> - 10.21-2
 - Report unmatched closing parantheses properly
+- Fix pcre2test for expressions with a callout inside a look-behind assertion
+  (upstream bug #1783)
 
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 10.21-1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
