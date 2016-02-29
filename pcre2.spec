@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.21
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -28,6 +28,8 @@ Patch2:     pcre2-10.21-Fix-pcre2test-loop-when-a-callout-is-in-an-initial-l.pat
 # Fix workspace overflow for (*ACCEPT) with deeply nested parentheses,
 # upstream bug #1791, fixed in upstream after 10.21
 Patch3:     pcre2-10.21-Fix-workspace-overflow-for-deep-nested-parentheses-w.patch
+# Fix a typo in pcre2_study(), fixed in upstream after 10.21
+Patch4:     pcre2-10.21-Fix-typo-in-pcre2_study.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -91,6 +93,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -170,6 +173,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Feb 29 2016 Petr Pisar <ppisar@redhat.com> - 10.21-3
+- Fix a typo in pcre2_study()
+
 * Thu Feb 11 2016 Petr Pisar <ppisar@redhat.com> - 10.21-2
 - Report unmatched closing parantheses properly
 - Fix pcre2test for expressions with a callout inside a look-behind assertion
