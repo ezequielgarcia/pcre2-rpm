@@ -48,7 +48,8 @@ PCRE2 is written in C, and it has its own API. There are three sets of
 functions, one for the 8-bit library, which processes strings of bytes, one
 for the 16-bit library, which processes strings of 16-bit values, and one for
 the 32-bit library, which processes strings of 32-bit values. There are no C++
-wrappers.
+wrappers. This package provides support for strings in 8-bit and UTF-8
+encodings. Install %{name}-utf16 or %{name}-utf32 packages for the other ones.
 
 The distribution does contain a set of C wrapper functions for the 8-bit
 library that are based on the POSIX regular expression API (see the pcre2posix
@@ -57,11 +58,28 @@ this just provides a POSIX calling interface to PCRE2; the regular expressions
 themselves still follow Perl syntax and semantics. The POSIX API is
 restricted, and does not give full access to all of PCRE2's facilities.
 
+%package utf16
+Summary:    UTF-16 variant of PCRE2
+Group:      Development/Libraries
+Conflicts:  %{name}%{?_isa} < 10.21-4
+
+%description utf16
+This is PCRE2 library working on UTF-16 strings.
+
+%package utf32
+Summary:    UTF-32 variant of PCRE2
+Group:      Development/Libraries
+Conflicts:  %{name}%{?_isa} < 10.21-4
+
+%description utf32
+This is PCRE2 library working on UTF-32 strings.
 
 %package devel
 Summary:    Development files for %{name}
 Group:      Development/Libraries
 Requires:   %{name}%{?_isa} = %{version}-%{release}
+Requires:   %{name}-utf16%{?_isa} = %{version}-%{release}
+Requires:   %{name}-utf32%{?_isa} = %{version}-%{release}
 Requires:   gcc
 
 %description devel
@@ -142,12 +160,28 @@ rm -rf $RPM_BUILD_ROOT%{_docdir}/pcre2
 make %{?_smp_mflags} check VERBOSE=yes
 
 %post -p /sbin/ldconfig
-
 %postun -p /sbin/ldconfig
 
+%post utf16 -p /sbin/ldconfig
+%postun utf16 -p /sbin/ldconfig
+
+%post utf32 -p /sbin/ldconfig
+%postun utf32 -p /sbin/ldconfig
+
 %files
-%{_libdir}/*.so.*
+%{_libdir}/libpcre2-8.so.*
+%{_libdir}/libpcre2-posix.so.*
 %{!?_licensedir:%global license %%doc}
+%license COPYING LICENCE
+%doc AUTHORS ChangeLog NEWS
+
+%files utf16
+%{_libdir}/libpcre2-16.so.*
+%license COPYING LICENCE
+%doc AUTHORS ChangeLog NEWS
+
+%files utf32
+%{_libdir}/libpcre2-32.so.*
 %license COPYING LICENCE
 %doc AUTHORS ChangeLog NEWS
 
@@ -175,6 +209,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Mon Mar 07 2016 Petr Pisar <ppisar@redhat.com> - 10.21-4
 - Ship README in devel as it covers API and build, not general info
+- Move UTF-16 and UTF-32 libraries into pcre-ut16 and pcre-32 subpackages
 
 * Mon Feb 29 2016 Petr Pisar <ppisar@redhat.com> - 10.21-3
 - Fix a typo in pcre2_study()
