@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.21
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -149,7 +149,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_libdir}/*.so.*
 %{!?_licensedir:%global license %%doc}
 %license COPYING LICENCE
-%doc AUTHORS ChangeLog NEWS README
+%doc AUTHORS ChangeLog NEWS
 
 %files devel
 %{_libdir}/*.so
@@ -159,7 +159,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man3/*
 %{_bindir}/pcre2-config
 %doc doc/*.txt doc/html
-%doc HACKING ./src/pcre2demo.c
+%doc README HACKING ./src/pcre2demo.c
 
 %files static
 %{_libdir}/*.a
@@ -173,6 +173,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Mar 07 2016 Petr Pisar <ppisar@redhat.com> - 10.21-4
+- Ship README in devel as it covers API and build, not general info
+
 * Mon Feb 29 2016 Petr Pisar <ppisar@redhat.com> - 10.21-3
 - Fix a typo in pcre2_study()
 
