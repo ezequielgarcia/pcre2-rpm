@@ -25,8 +25,8 @@ Patch1:     pcre2-10.21-Detect-unmatched-closing-parentheses-in-the-pre-scan.pat
 # Fix pcre2test for expressions with a callout inside a look-behind assertion,
 # upstream bug #1783, fixed in upstream after 10.21
 Patch2:     pcre2-10.21-Fix-pcre2test-loop-when-a-callout-is-in-an-initial-l.patch
-# Fix workspace overflow for (*ACCEPT) with deeply nested parentheses,
-# upstream bug #1791, fixed in upstream after 10.21
+# Fix CVE-2016-3191 (workspace overflow for (*ACCEPT) with deeply nested
+# parentheses), upstream bug #1791, fixed in upstream after 10.21
 Patch3:     pcre2-10.21-Fix-workspace-overflow-for-deep-nested-parentheses-w.patch
 # Fix a typo in pcre2_study(), fixed in upstream after 10.21
 Patch4:     pcre2-10.21-Fix-typo-in-pcre2_study.patch
@@ -218,8 +218,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Report unmatched closing parantheses properly
 - Fix pcre2test for expressions with a callout inside a look-behind assertion
   (upstream bug #1783)
-- Fix workspace overflow for (*ACCEPT) with deeply nested parentheses
-  (upstream bug #1791)
+- Fix CVE-2016-3191 (workspace overflow for (*ACCEPT) with deeply nested
+  parentheses) (upstream bug #1791)
 
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 10.21-1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
