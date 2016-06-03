@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.21
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -30,6 +30,8 @@ Patch2:     pcre2-10.21-Fix-pcre2test-loop-when-a-callout-is-in-an-initial-l.pat
 Patch3:     pcre2-10.21-Fix-workspace-overflow-for-deep-nested-parentheses-w.patch
 # Fix a typo in pcre2_study(), fixed in upstream after 10.21
 Patch4:     pcre2-10.21-Fix-typo-in-pcre2_study.patch
+# Fix a race in JIT locking condition, fixed in upstream after 10.21
+Patch5:     pcre2-10.21-A-racing-condition-is-fixed-in-JIT-reported-by-Mozil.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -112,6 +114,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -207,6 +210,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Jun 03 2016 Petr Pisar <ppisar@redhat.com> - 10.21-5
+- Fix a race in JIT locking condition
+
 * Mon Mar 07 2016 Petr Pisar <ppisar@redhat.com> - 10.21-4
 - Ship README in devel as it covers API and build, not general info
 - Move UTF-16 and UTF-32 libraries into pcre-ut16 and pcre-32 subpackages

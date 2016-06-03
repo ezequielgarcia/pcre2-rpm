@@ -1,0 +1,42 @@
+From d317164a936f976aa94bcc88e4cc4d09b8354c27 Mon Sep 17 00:00:00 2001
+From: zherczeg <zherczeg@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 19 May 2016 18:09:07 +0000
+Subject: [PATCH] A racing condition is fixed in JIT reported by Mozilla.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Ported to 10.21 from upstream:
+
+commit 78c2458423ce34b08dd0a119b774e37c908d57ef
+Author: zherczeg <zherczeg@6239d852-aaf2-0410-a92c-79f79f948069>
+Date:   Thu May 19 18:09:07 2016 +0000
+
+    A racing condition is fixed in JIT reported by Mozilla.
+
+    git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@514 6239d852-aaf2-0410-a92c-79f79f948069
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/sljit/sljitUtils.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/sljit/sljitUtils.c b/src/sljit/sljitUtils.c
+index 5294b5f..b7ad3dc 100644
+--- a/src/sljit/sljitUtils.c
++++ b/src/sljit/sljitUtils.c
+@@ -182,7 +182,10 @@ static pthread_mutex_t dev_zero_mutex = PTHREAD_MUTEX_INITIALIZER;
+ static SLJIT_INLINE sljit_si open_dev_zero(void)
+ {
+ 	pthread_mutex_lock(&dev_zero_mutex);
+-	dev_zero = open("/dev/zero", O_RDWR);
++	/* The dev_zero might be initialized by another thread during the waiting. */
++	if (dev_zero < 0) {
++		dev_zero = open("/dev/zero", O_RDWR);
++	}
+ 	pthread_mutex_unlock(&dev_zero_mutex);
+ 	return dev_zero < 0;
+ }
+-- 
+2.5.5
+
