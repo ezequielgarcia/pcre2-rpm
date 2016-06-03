@@ -32,6 +32,8 @@ Patch3:     pcre2-10.21-Fix-workspace-overflow-for-deep-nested-parentheses-w.pat
 Patch4:     pcre2-10.21-Fix-typo-in-pcre2_study.patch
 # Fix a race in JIT locking condition, fixed in upstream after 10.21
 Patch5:     pcre2-10.21-A-racing-condition-is-fixed-in-JIT-reported-by-Mozil.patch
+# Fix an ovector check in JIT test program, fixed in upstream after 10.21
+Patch6:     pcre2-10.21-Fix-typo-in-test-program.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -115,6 +117,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -212,6 +215,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Fri Jun 03 2016 Petr Pisar <ppisar@redhat.com> - 10.21-5
 - Fix a race in JIT locking condition
+- Fix an ovector check in JIT test program
 
 * Mon Mar 07 2016 Petr Pisar <ppisar@redhat.com> - 10.21-4
 - Ship README in devel as it covers API and build, not general info
