@@ -34,6 +34,8 @@ Patch4:     pcre2-10.21-Fix-typo-in-pcre2_study.patch
 Patch5:     pcre2-10.21-A-racing-condition-is-fixed-in-JIT-reported-by-Mozil.patch
 # Fix an ovector check in JIT test program, fixed in upstream after 10.21
 Patch6:     pcre2-10.21-Fix-typo-in-test-program.patch
+# Enable JIT in the pcre2grep tool, fixed in upstream after 10.21
+Patch7:     pcre2-10.21-Make-pcre2grep-use-JIT-it-was-omitted-by-mistake.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -118,6 +120,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -216,6 +219,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Fri Jun 03 2016 Petr Pisar <ppisar@redhat.com> - 10.21-5
 - Fix a race in JIT locking condition
 - Fix an ovector check in JIT test program
+- Enable JIT in the pcre2grep tool
 
 * Mon Mar 07 2016 Petr Pisar <ppisar@redhat.com> - 10.21-4
 - Ship README in devel as it covers API and build, not general info
