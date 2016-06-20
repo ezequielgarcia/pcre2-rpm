@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.21
-Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -36,6 +36,13 @@ Patch5:     pcre2-10.21-A-racing-condition-is-fixed-in-JIT-reported-by-Mozil.pat
 Patch6:     pcre2-10.21-Fix-typo-in-test-program.patch
 # Enable JIT in the pcre2grep tool, fixed in upstream after 10.21
 Patch7:     pcre2-10.21-Make-pcre2grep-use-JIT-it-was-omitted-by-mistake.patch
+# Fix repeated pcregrep output if -o with -M options were used and the match
+# extended over a line boundary, upstream bug #1848, fixed in upstream after
+# 10.21
+Patch8:     pcre2-10.21-Fix-bad-interaction-between-o-and-M-in-pcre2grep.patch
+# Documentation for Fix-bad-interaction-between-o-and-M-in-pcre2grep.patch,
+# upstream bug #1848, fixed in upstream after 10.21
+Patch9:     pcre2-10.21-Documentation-clarification.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -121,6 +128,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
+%patch9 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -216,6 +225,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jun 20 2016 Petr Pisar <ppisar@redhat.com> - 10.21-6
+- Fix repeated pcregrep output if -o with -M options were used and the match
+  extended over a line boundary (upstream bug #1848)
+
 * Fri Jun 03 2016 Petr Pisar <ppisar@redhat.com> - 10.21-5
 - Fix a race in JIT locking condition
 - Fix an ovector check in JIT test program
