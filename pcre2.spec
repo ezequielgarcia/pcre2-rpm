@@ -1,8 +1,8 @@
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.21
-Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
+Version:    10.22
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -12,6 +12,7 @@ Group:      System Environment/Libraries
 # LICENSE:                              BSD text and declares Public Domain
 #                                       for testdata
 #Not distributed in binary package
+# ar-lib:                               GPLv2+ with exception
 # autotools:                            GPLv3+ with exception
 # install-sh:                           MIT
 # testdata:                             Public Domain
@@ -20,29 +21,6 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Report unmatched closing parantheses properly, in upstream after 10.21
-Patch1:     pcre2-10.21-Detect-unmatched-closing-parentheses-in-the-pre-scan.patch
-# Fix pcre2test for expressions with a callout inside a look-behind assertion,
-# upstream bug #1783, fixed in upstream after 10.21
-Patch2:     pcre2-10.21-Fix-pcre2test-loop-when-a-callout-is-in-an-initial-l.patch
-# Fix CVE-2016-3191 (workspace overflow for (*ACCEPT) with deeply nested
-# parentheses), upstream bug #1791, fixed in upstream after 10.21
-Patch3:     pcre2-10.21-Fix-workspace-overflow-for-deep-nested-parentheses-w.patch
-# Fix a typo in pcre2_study(), fixed in upstream after 10.21
-Patch4:     pcre2-10.21-Fix-typo-in-pcre2_study.patch
-# Fix a race in JIT locking condition, fixed in upstream after 10.21
-Patch5:     pcre2-10.21-A-racing-condition-is-fixed-in-JIT-reported-by-Mozil.patch
-# Fix an ovector check in JIT test program, fixed in upstream after 10.21
-Patch6:     pcre2-10.21-Fix-typo-in-test-program.patch
-# Enable JIT in the pcre2grep tool, fixed in upstream after 10.21
-Patch7:     pcre2-10.21-Make-pcre2grep-use-JIT-it-was-omitted-by-mistake.patch
-# Fix repeated pcregrep output if -o with -M options were used and the match
-# extended over a line boundary, upstream bug #1848, fixed in upstream after
-# 10.21
-Patch8:     pcre2-10.21-Fix-bad-interaction-between-o-and-M-in-pcre2grep.patch
-# Documentation for Fix-bad-interaction-between-o-and-M-in-pcre2grep.patch,
-# upstream bug #1848, fixed in upstream after 10.21
-Patch9:     pcre2-10.21-Documentation-clarification.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -121,15 +99,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -157,6 +126,7 @@ autoreconf -vif
     --enable-pcre2-32 \
     --disable-pcre2test-libedit \
     --enable-pcre2test-libreadline \
+    --enable-pcre2grep-callout \
     --disable-pcre2grep-libbz2 \
     --disable-pcre2grep-libz \
     --disable-rebuild-chartables \
@@ -225,6 +195,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jun 30 2016 Petr Pisar <ppisar@redhat.com> - 10.22-0.1.RC1
+- 10.22-RC1 bump
+- libpcre2-posix library changed ABI (FIXME: Bump SONAME)
+
 * Mon Jun 20 2016 Petr Pisar <ppisar@redhat.com> - 10.21-6
 - Fix repeated pcregrep output if -o with -M options were used and the match
   extended over a line boundary (upstream bug #1848)
