@@ -30,6 +30,10 @@ Patch2:     pcre2-10.22-RC1-Additional-test-for-recent-JIT-bugfix.patch
 # Bump pcre2posix SONAME because of ABI change in 10.22-RC1, in upstream after
 # 10.22-RC1
 Patch3:     pcre2-10.22-RC1-Fix-incorrect-SONAME-for-pcre2posix-wrapper-library.patch
+# Correct pcre2unicode(3) documentation, in upstream after 10.22-RC1
+Patch4:     pcre2-10.22-RC1-Fix-typos-and-add-clarification-to-documentation.patch
+# Correct pcre2unicode(3) documentation, in upstream after 10.22-RC1
+Patch5:     pcre2-10.22-RC1-Fix-typo-again-hopefully-correctly-this-time.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -111,6 +115,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -211,6 +217,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 - 10.22-RC1 bump
 - libpcre2-posix library changed ABI
 - Fix register overwite in JIT when SSE2 acceleration is enabled
+- Correct pcre2unicode(3) documentation
 
 * Mon Jun 20 2016 Petr Pisar <ppisar@redhat.com> - 10.21-6
 - Fix repeated pcregrep output if -o with -M options were used and the match

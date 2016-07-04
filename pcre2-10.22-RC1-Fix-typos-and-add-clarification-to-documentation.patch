@@ -1,0 +1,89 @@
+From 4acd03a5ae1acb5361233d469b19e7e954805a2a Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sat, 2 Jul 2016 16:34:01 +0000
+Subject: [PATCH] Fix typos and add clarification to documentation.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@542 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ doc/pcre2unicode.3 | 33 ++++++++++++++++++---------------
+ 1 file changed, 18 insertions(+), 15 deletions(-)
+
+diff --git a/doc/pcre2unicode.3 b/doc/pcre2unicode.3
+index 59e226e..607d40e 100644
+--- a/doc/pcre2unicode.3
++++ b/doc/pcre2unicode.3
+@@ -1,4 +1,4 @@
+-.TH PCRE2UNICODE 3 "16 October 2015" "PCRE2 10.21"
++.TH PCRE2UNICODE 3 "02 July 2016" "PCRE2 10.22"
+ .SH NAME
+ PCRE - Perl-compatible regular expressions (revised API)
+ .SH "UNICODE AND UTF SUPPORT"
+@@ -57,18 +57,21 @@ individual code units.
+ In UTF modes, the dot metacharacter matches one UTF character instead of a
+ single code unit.
+ .P
+-The escape sequence \eC can be used to match a single code unit, in a UTF mode,
++The escape sequence \eC can be used to match a single code unit in a UTF mode,
+ but its use can lead to some strange effects because it breaks up multi-unit
+ characters (see the description of \eC in the
+ .\" HREF
+ \fBpcre2pattern\fP
+ .\"
+-documentation). The use of \eC is not supported by the alternative matching
+-function \fBpcre2_dfa_match()\fP when in UTF mode. Its use provokes a
+-match-time error. The JIT optimization also does not support \eC in UTF mode.
+-If JIT optimization is requested for a UTF pattern that contains \eC, it will
+-not succeed, and so the matching will be carried out by the normal interpretive
+-function.
++documentation). 
++.P
++The use of \eC is not supported by the alternative matching function
++\fBpcre2_dfa_match()\fP when in UTF-8 or UTF-16 mode, that is, when a character
++may consist of more than one code unit. The use of \eC in these modes provokes
++a match-time error. Also, the JIT optimization does not support \eC in these
++modes. If JIT optimization is requested for a UTF-8 or UTF-16 pattern that
++contains \eC, it will not succeed, and so when \fBpcre2_match()\fP is called,
++the matching will be carried out by the normal interpretive function.
+ .P
+ The character escapes \eb, \eB, \ed, \eD, \es, \eS, \ew, and \eW correctly test
+ characters of any code value, but, by default, the characters that PCRE2
+@@ -232,9 +235,9 @@ never occur in a valid UTF-8 string.
+ .sp
+ The following negative error codes are given for invalid UTF-16 strings:
+ .sp
+-  PCRE_UTF16_ERR1  Missing low surrogate at end of string
+-  PCRE_UTF16_ERR2  Invalid low surrogate follows high surrogate
+-  PCRE_UTF16_ERR3  Isolated low surrogate
++  PCRE2_UTF16_ERR1  Missing low surrogate at end of string
++  PCRE2_UTF16_ERR2  Invalid low surrogate follows high surrogate
++  PCRE2_UTF16_ERR3  Isolated low surrogate
+ .sp
+ .
+ .
+@@ -244,8 +247,8 @@ The following negative error codes are given for invalid UTF-16 strings:
+ .sp
+ The following negative error codes are given for invalid UTF-32 strings:
+ .sp
+-  PCRE_UTF32_ERR1  Surrogate character (range from 0xd800 to 0xdfff)
+-  PCRE_UTF32_ERR2  Code point is greater than 0x10ffff
++  PCRE2_UTF32_ERR1  Surrogate character (range from 0xd800 to 0xdfff)
++  PCRE2_UTF32_ERR2  Code point is greater than 0x10ffff
+ .sp
+ .
+ .
+@@ -263,6 +266,6 @@ Cambridge, England.
+ .rs
+ .sp
+ .nf
+-Last updated: 16 October 2015
+-Copyright (c) 1997-2015 University of Cambridge.
++Last updated: 02 July 2016
++Copyright (c) 1997-2016 University of Cambridge.
+ .fi
+-- 
+2.5.5
+
