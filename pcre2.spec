@@ -21,6 +21,12 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# Fix register overwite in JIT when SSE2 acceleration is enabled, in upstream
+# after 10.22-RC1
+Patch1:     pcre2-10.22-RC1-Fix-register-overwite-in-JIT-when-SSE2-acceleration-.patch
+# Test for Fix-register-overwite-in-JIT-when-SSE2-acceleration-.patch, in
+# upstream after 10.22-RC1
+Patch2:     pcre2-10.22-RC1-Additional-test-for-recent-JIT-bugfix.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -99,6 +105,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -198,6 +206,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Thu Jun 30 2016 Petr Pisar <ppisar@redhat.com> - 10.22-0.1.RC1
 - 10.22-RC1 bump
 - libpcre2-posix library changed ABI (FIXME: Bump SONAME)
+- Fix register overwite in JIT when SSE2 acceleration is enabled
 
 * Mon Jun 20 2016 Petr Pisar <ppisar@redhat.com> - 10.21-6
 - Fix repeated pcregrep output if -o with -M options were used and the match

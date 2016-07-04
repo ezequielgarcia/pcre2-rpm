@@ -1,0 +1,64 @@
+From 987102fcb0b726a1f29c9ed3e52c3839ebe372cd Mon Sep 17 00:00:00 2001
+From: zherczeg <zherczeg@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Fri, 1 Jul 2016 08:56:59 +0000
+Subject: [PATCH] Fix register overwite in JIT when SSE2 acceleration is
+ enabled.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@539 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ ChangeLog               | 2 ++
+ src/pcre2_jit_compile.c | 4 ++--
+ src/pcre2_jit_test.c    | 1 +
+ 3 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 6b8b9a4..47f5835 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -166,6 +166,8 @@ it fails when running the interpreter with a 16M stack (and if changing the
+ stack size via pcre2test is possible). This avoids having to manually set a
+ large stack size when testing with clang.
+ 
++42. Fix register overwite in JIT when SSE2 acceleration is enabled.
++
+ 
+ Version 10.21 12-January-2016
+ -----------------------------
+diff --git a/src/pcre2_jit_compile.c b/src/pcre2_jit_compile.c
+index c98f977..8dea90a 100644
+--- a/src/pcre2_jit_compile.c
++++ b/src/pcre2_jit_compile.c
+@@ -4027,12 +4027,12 @@ sljit_emit_op_custom(compiler, instruction, 4);
+ 
+ if (load_twice)
+   {
+-  OP1(SLJIT_MOV, TMP3, 0, TMP2, 0);
++  OP1(SLJIT_MOV, RETURN_ADDR, 0, TMP2, 0);
+   instruction[3] = 0xc0 | (tmp2_ind << 3) | 1;
+   sljit_emit_op_custom(compiler, instruction, 4);
+ 
+   OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+-  OP1(SLJIT_MOV, TMP2, 0, TMP3, 0);
++  OP1(SLJIT_MOV, TMP2, 0, RETURN_ADDR, 0);
+   }
+ 
+ OP2(SLJIT_ASHR, TMP1, 0, TMP1, 0, TMP2, 0);
+diff --git a/src/pcre2_jit_test.c b/src/pcre2_jit_test.c
+index dfe0032..705ba18 100644
+--- a/src/pcre2_jit_test.c
++++ b/src/pcre2_jit_test.c
+@@ -692,6 +692,7 @@ static struct regression_test_case regression_test_cases[] = {
+ 	{ PCRE2_FIRSTLINE | PCRE2_DOTALL, PCRE2_NEWLINE_LF, 0, 0 | F_NOMATCH, "ab.", "ab" },
+ 	{ MU | PCRE2_FIRSTLINE, A, 0, 1 | F_NOMATCH, "^[a-d0-9]", "\nxx\nd" },
+ 	{ PCRE2_FIRSTLINE | PCRE2_DOTALL, PCRE2_NEWLINE_ANY, 0, 0, "....a", "012\n0a" },
++	{ MU | PCRE2_FIRSTLINE, A, 0, 0, "[aC]", "a" },
+ 
+ 	/* Recurse. */
+ 	{ MU, A, 0, 0, "(a)(?1)", "aa" },
+-- 
+2.5.5
+

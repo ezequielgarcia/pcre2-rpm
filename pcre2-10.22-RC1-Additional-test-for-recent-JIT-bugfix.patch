@@ -1,0 +1,56 @@
+From 7490ab47a6b597a4724b961a1987300809d0bef1 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sat, 2 Jul 2016 15:52:30 +0000
+Subject: [PATCH] Additional test for recent JIT bugfix.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@540 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ testdata/testinput17  |  8 ++++++++
+ testdata/testoutput17 | 10 ++++++++++
+ 2 files changed, 18 insertions(+)
+
+diff --git a/testdata/testinput17 b/testdata/testinput17
+index f1bf25f..90c0a09 100644
+--- a/testdata/testinput17
++++ b/testdata/testinput17
+@@ -288,5 +288,13 @@
+ /abc/jitfast
+     abc
+     abc\=no_jit 
++    
++# ---- 
++
++/[aC]/mg,firstline
++match\nmatch
++
++/[aCz]/mg,firstline
++match\nmatch
+ 
+ # End of testinput17
+diff --git a/testdata/testoutput17 b/testdata/testoutput17
+index 36509c8..60fe20b 100644
+--- a/testdata/testoutput17
++++ b/testdata/testoutput17
+@@ -530,5 +530,15 @@ Failed: error -47: match limit exceeded
+  0: abc (JIT)
+     abc\=no_jit 
+  0: abc (JIT)
++    
++# ---- 
++
++/[aC]/mg,firstline
++match\nmatch
++ 0: a (JIT)
++
++/[aCz]/mg,firstline
++match\nmatch
++ 0: a (JIT)
+ 
+ # End of testinput17
+-- 
+2.5.5
+
