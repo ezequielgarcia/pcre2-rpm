@@ -27,6 +27,9 @@ Patch1:     pcre2-10.22-RC1-Fix-register-overwite-in-JIT-when-SSE2-acceleration-
 # Test for Fix-register-overwite-in-JIT-when-SSE2-acceleration-.patch, in
 # upstream after 10.22-RC1
 Patch2:     pcre2-10.22-RC1-Additional-test-for-recent-JIT-bugfix.patch
+# Bump pcre2posix SONAME because of ABI change in 10.22-RC1, in upstream after
+# 10.22-RC1
+Patch3:     pcre2-10.22-RC1-Fix-incorrect-SONAME-for-pcre2posix-wrapper-library.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -107,6 +110,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -205,7 +209,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Thu Jun 30 2016 Petr Pisar <ppisar@redhat.com> - 10.22-0.1.RC1
 - 10.22-RC1 bump
-- libpcre2-posix library changed ABI (FIXME: Bump SONAME)
+- libpcre2-posix library changed ABI
 - Fix register overwite in JIT when SSE2 acceleration is enabled
 
 * Mon Jun 20 2016 Petr Pisar <ppisar@redhat.com> - 10.21-6
