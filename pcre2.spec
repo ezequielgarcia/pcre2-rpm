@@ -1,5 +1,5 @@
 # This is stable release:
-%global rcversion RC1
+#%%global rcversion RC1
 Name:       pcre2
 Version:    10.22
 Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
@@ -15,25 +15,14 @@ Group:      System Environment/Libraries
 # ar-lib:                               GPLv2+ with exception
 # autotools:                            GPLv3+ with exception
 # install-sh:                           MIT
+# ltmain.sh:                            GPLv2+ with exception and GPLv3+ with
+#                                       exception and GPLv3+
 # testdata:                             Public Domain
 License:    BSD
 URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Fix register overwite in JIT when SSE2 acceleration is enabled, in upstream
-# after 10.22-RC1
-Patch1:     pcre2-10.22-RC1-Fix-register-overwite-in-JIT-when-SSE2-acceleration-.patch
-# Test for Fix-register-overwite-in-JIT-when-SSE2-acceleration-.patch, in
-# upstream after 10.22-RC1
-Patch2:     pcre2-10.22-RC1-Additional-test-for-recent-JIT-bugfix.patch
-# Bump pcre2posix SONAME because of ABI change in 10.22-RC1, in upstream after
-# 10.22-RC1
-Patch3:     pcre2-10.22-RC1-Fix-incorrect-SONAME-for-pcre2posix-wrapper-library.patch
-# Correct pcre2unicode(3) documentation, in upstream after 10.22-RC1
-Patch4:     pcre2-10.22-RC1-Fix-typos-and-add-clarification-to-documentation.patch
-# Correct pcre2unicode(3) documentation, in upstream after 10.22-RC1
-Patch5:     pcre2-10.22-RC1-Fix-typo-again-hopefully-correctly-this-time.patch
 
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
@@ -112,11 +101,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -213,6 +197,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Jul 29 2016 Petr Pisar <ppisar@redhat.com> - 10.22-1
+- 10.22 bump
+
 * Thu Jun 30 2016 Petr Pisar <ppisar@redhat.com> - 10.22-0.1.RC1
 - 10.22-RC1 bump
 - libpcre2-posix library changed ABI
