@@ -1,0 +1,372 @@
+From 8565d846f405861e3f6ae34914bb24b5e2002c45 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Wed, 3 Aug 2016 17:22:59 +0000
+Subject: [PATCH] Fix bug that caused chars > 255 not to be matched by classes
+ like [\W\pL] when PCRE2_UCP was not set.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Ported to 10.22:
+
+commit 143f7f5c4dabd978117d415d2016c7595a7b9867
+Author: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date:   Wed Aug 3 17:22:59 2016 +0000
+
+    Fix bug that caused chars > 255 not to be matched by classes like [\W\pL] when
+    PCRE2_UCP was not set.
+
+    git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@554 6239d852-aaf2-0410-a92c-79f79f948069
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2_compile.c      | 49 ++++++++++++++++++++++++++++++++++--------------
+ testdata/testinput10     |  9 +++++++++
+ testdata/testinput12     | 11 +++++++++++
+ testdata/testinput5      | 26 ++++++++++++++++---------
+ testdata/testoutput10    | 25 ++++++++++++++++++++++++
+ testdata/testoutput12-16 | 29 ++++++++++++++++++++++++++++
+ testdata/testoutput12-32 | 29 ++++++++++++++++++++++++++++
+ testdata/testoutput5     | 49 ++++++++++++++++++++++++------------------------
+ 8 files changed, 179 insertions(+), 48 deletions(-)
+
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index bb9736c..a92a69a 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -4950,11 +4950,11 @@ for (;; ptr++)
+         }
+ 
+ #ifdef SUPPORT_WIDE_CHARS
+-      /* If any wide characters have been encountered, set xclass = TRUE. Then,
+-      in the pre-compile phase, accumulate the length of the wide characters
+-      and reset the pointer. This is so that very large classes that contain a
+-      zillion wide characters do not overwrite the work space (which is on the
+-      stack). */
++      /* If any wide characters or Unicode properties have been encountered,
++      set xclass = TRUE. Then, in the pre-compile phase, accumulate the length
++      of the wide characters etc. and reset the pointer. This is so that very
++      large classes that contain a zillion wide characters do not overwrite the
++      work space (which is on the stack). */
+ 
+       if (class_uchardata > class_uchardata_base)
+         {
+@@ -4994,22 +4994,43 @@ for (;; ptr++)
+     negated). This requirement is indicated by match_all_or_no_wide_chars being
+     true. We do this by including an explicit range, which works in both cases.
+ 
++    When there *are* properties in a positive UTF-8 or any 16-bit or 32_bit
++    class where \S etc is present without PCRE2_UCP, causing an extended class
++    to be compiled, we make sure that all characters > 255 are included by
++    forcing match_all_or_no_wide_chars to be true.
++
+     If, when generating an xclass, there are no characters < 256, we can omit
+     the bitmap in the actual compiled code. */
+ 
+-#ifdef SUPPORT_WIDE_CHARS
++#ifdef SUPPORT_WIDE_CHARS  /* Defined for 16/32 bits, or 8-bit with Unicode */
++    if (xclass && (
+ #ifdef SUPPORT_UNICODE
+-    if (xclass && (xclass_has_prop || !should_flip_negation ||
+-         (options & PCRE2_UCP) != 0))
+-#elif PCRE2_CODE_UNIT_WIDTH != 8
+-    if (xclass && (xclass_has_prop || !should_flip_negation))
++        (options & PCRE2_UCP) != 0 ||
+ #endif
++        xclass_has_prop || !should_flip_negation))
+       {
+-      if (match_all_or_no_wide_chars)
++      if (match_all_or_no_wide_chars || (
++#if PCRE2_CODE_UNIT_WIDTH == 8
++           utf &&
++#endif
++           should_flip_negation && !negate_class && (options & PCRE2_UCP) == 0))
+         {
+         *class_uchardata++ = XCL_RANGE;
+-        class_uchardata += PRIV(ord2utf)(0x100, class_uchardata);
+-        class_uchardata += PRIV(ord2utf)(MAX_UTF_CODE_POINT, class_uchardata);
++        if (utf)   /* Will always be utf in the 8-bit library */
++          {
++          class_uchardata += PRIV(ord2utf)(0x100, class_uchardata);
++          class_uchardata += PRIV(ord2utf)(MAX_UTF_CODE_POINT, class_uchardata);
++          }
++        else       /* Can only happen for the 16-bit & 32-bit libraries */
++          {
++#if PCRE2_CODE_UNIT_WIDTH == 16
++          *class_uchardata++ = 0x100;
++          *class_uchardata++ = 0xffffu;
++#elif PCRE2_CODE_UNIT_WIDTH == 32
++          *class_uchardata++ = 0x100;
++          *class_uchardata++ = 0xffffffffu;
++#endif
++          }
+         }
+       *class_uchardata++ = XCL_END;    /* Marks the end of extra data */
+       *code++ = OP_XCLASS;
+@@ -5037,7 +5058,7 @@ for (;; ptr++)
+       PUT(previous, 1, (int)(code - previous));
+       break;   /* End of class handling */
+       }
+-#endif
++#endif  /* SUPPORT_WIDE_CHARS */
+ 
+     /* If there are no characters > 255, or they are all to be included or
+     excluded, set the opcode to OP_CLASS or OP_NCLASS, depending on whether the
+diff --git a/testdata/testinput10 b/testdata/testinput10
+index 550e1c9..4b80778 100644
+--- a/testdata/testinput10
++++ b/testdata/testinput10
+@@ -445,4 +445,13 @@
+ /(?<=(a)(?-1))x/I,utf
+     a\x80zx\=offset=3
+ 
++/[\W\p{Any}]/B
++    abc
++    123 
++
++/[\W\pL]/B
++    abc
++\= Expect no match
++    123     
++
+ # End of testinput10
+diff --git a/testdata/testinput12 b/testdata/testinput12
+index 14a7715..29934ec 100644
+--- a/testdata/testinput12
++++ b/testdata/testinput12
+@@ -343,4 +343,15 @@
+ /./utf
+     \x{110000}
+ 
++/[\W\p{Any}]/B
++    abc
++    123 
++
++/[\W\pL]/B
++    abc
++    \x{100}
++    \x{308}  
++\= Expect no match
++    123     
++
+ # End of testinput12
+diff --git a/testdata/testinput5 b/testdata/testinput5
+index 2e13a7c..1f44ceb 100644
+--- a/testdata/testinput5
++++ b/testdata/testinput5
+@@ -1675,15 +1675,6 @@
+ /((?<digit>\d)|(?<letter>\p{L}))/g,substitute_extended,replace=<${digit:+digit; :not digit; }${letter:+letter:not a letter}>
+     ab12cde
+ 
+-/[\W\p{Any}]/B
+-    abc
+-    123 
+-
+-/[\W\pL]/B
+-    abc
+-\= Expect no match
+-    123     
+-
+ /(*UCP)(*UTF)[[:>:]]X/B
+ 
+ /abc/utf,replace=xyz
+@@ -1716,4 +1707,21 @@
+ 
+ /(*UTF)C\x09((?<!'(?x)!*H? #\xcc\x9a[^$]/
+ 
++/[\D]/utf
++    \x{1d7cf}
++
++/[\D\P{Nd}]/utf
++    \x{1d7cf}
++
++/[^\D]/utf
++    a9b
++\= Expect no match
++    \x{1d7cf}
++
++/[^\D\P{Nd}]/utf
++    a9b
++    \x{1d7cf}
++\= Expect no match
++    \x{10000}
++
+ # End of testinput5 
+diff --git a/testdata/testoutput10 b/testdata/testoutput10
+index 9761f0f..0c1e9b2 100644
+--- a/testdata/testoutput10
++++ b/testdata/testoutput10
+@@ -1539,4 +1539,29 @@ Subject length lower bound = 1
+     a\x80zx\=offset=3
+ Failed: error -22: UTF-8 error: isolated byte with 0x80 bit set at offset 1
+ 
++/[\W\p{Any}]/B
++------------------------------------------------------------------
++        Bra
++        [\x00-/:-@[-^`{-\xff\p{Any}]
++        Ket
++        End
++------------------------------------------------------------------
++    abc
++ 0: a
++    123 
++ 0: 1
++
++/[\W\pL]/B
++------------------------------------------------------------------
++        Bra
++        [\x00-/:-@[-^`{-\xff\p{L}]
++        Ket
++        End
++------------------------------------------------------------------
++    abc
++ 0: a
++\= Expect no match
++    123     
++No match
++
+ # End of testinput10
+diff --git a/testdata/testoutput12-16 b/testdata/testoutput12-16
+index 383a032..9cd6640 100644
+--- a/testdata/testoutput12-16
++++ b/testdata/testoutput12-16
+@@ -1367,4 +1367,33 @@ Subject length lower bound = 2
+     \x{110000}
+ ** Failed: character \x{110000} is greater than 0x10ffff and so cannot be converted to UTF-16
+ 
++/[\W\p{Any}]/B
++------------------------------------------------------------------
++        Bra
++        [\x00-/:-@[-^`{-\xff\p{Any}\x{100}-\x{ffff}]
++        Ket
++        End
++------------------------------------------------------------------
++    abc
++ 0: a
++    123 
++ 0: 1
++
++/[\W\pL]/B
++------------------------------------------------------------------
++        Bra
++        [\x00-/:-@[-^`{-\xff\p{L}\x{100}-\x{ffff}]
++        Ket
++        End
++------------------------------------------------------------------
++    abc
++ 0: a
++    \x{100}
++ 0: \x{100}
++    \x{308}  
++ 0: \x{308}
++\= Expect no match
++    123     
++No match
++
+ # End of testinput12
+diff --git a/testdata/testoutput12-32 b/testdata/testoutput12-32
+index 95f1834..75a5ad7 100644
+--- a/testdata/testoutput12-32
++++ b/testdata/testoutput12-32
+@@ -1361,4 +1361,33 @@ Subject length lower bound = 2
+     \x{110000}
+ Failed: error -28: UTF-32 error: code points greater than 0x10ffff are not defined at offset 0
+ 
++/[\W\p{Any}]/B
++------------------------------------------------------------------
++        Bra
++        [\x00-/:-@[-^`{-\xff\p{Any}\x{100}-\x{ffffffff}]
++        Ket
++        End
++------------------------------------------------------------------
++    abc
++ 0: a
++    123 
++ 0: 1
++
++/[\W\pL]/B
++------------------------------------------------------------------
++        Bra
++        [\x00-/:-@[-^`{-\xff\p{L}\x{100}-\x{ffffffff}]
++        Ket
++        End
++------------------------------------------------------------------
++    abc
++ 0: a
++    \x{100}
++ 0: \x{100}
++    \x{308}  
++ 0: \x{308}
++\= Expect no match
++    123     
++No match
++
+ # End of testinput12
+diff --git a/testdata/testoutput5 b/testdata/testoutput5
+index f19ad8c..b670677 100644
+--- a/testdata/testoutput5
++++ b/testdata/testoutput5
+@@ -4020,31 +4020,6 @@ MK: a\x{12345}b\x{09}(d)c
+     ab12cde
+  7: <not digit; letter><not digit; letter><digit; not a letter><digit; not a letter><not digit; letter><not digit; letter><not digit; letter>
+ 
+-/[\W\p{Any}]/B
+-------------------------------------------------------------------
+-        Bra
+-        [\x00-/:-@[-^`{-\xff\p{Any}]
+-        Ket
+-        End
+-------------------------------------------------------------------
+-    abc
+- 0: a
+-    123 
+- 0: 1
+-
+-/[\W\pL]/B
+-------------------------------------------------------------------
+-        Bra
+-        [\x00-/:-@[-^`{-\xff\p{L}]
+-        Ket
+-        End
+-------------------------------------------------------------------
+-    abc
+- 0: a
+-\= Expect no match
+-    123     
+-No match
+-
+ /(*UCP)(*UTF)[[:>:]]X/B
+ ------------------------------------------------------------------
+         Bra
+@@ -4161,4 +4136,28 @@ No match
+ /(*UTF)C\x09((?<!'(?x)!*H? #\xcc\x9a[^$]/
+ Failed: error 114 at offset 39: missing closing parenthesis
+ 
++/[\D]/utf
++    \x{1d7cf}
++ 0: \x{1d7cf}
++
++/[\D\P{Nd}]/utf
++    \x{1d7cf}
++ 0: \x{1d7cf}
++
++/[^\D]/utf
++    a9b
++ 0: 9
++\= Expect no match
++    \x{1d7cf}
++No match
++
++/[^\D\P{Nd}]/utf
++    a9b
++ 0: 9
++    \x{1d7cf}
++ 0: \x{1d7cf}
++\= Expect no match
++    \x{10000}
++No match
++
+ # End of testinput5 
+-- 
+2.5.5
+
