@@ -30,6 +30,10 @@ Patch1:     pcre2-10.22-Fix-bug-that-caused-chars-255-not-to-be-matched-by-c.pat
 # Fix displaying a callout position in pcretest output with an escape sequence
 # greater than \x{ff}, in upstream after 10.22
 Patch2:     pcre2-10.22-Fix-callout-display-bug-in-pcre2test.patch
+# 1/2 Fix pcrepattern(3) documentation, un upstream after 10.22
+Patch3:     pcre2-10.22-Fix-typos-in-documentation.patch
+# 2/2 Fix pcrepattern(3) documentation, in upstream after 10.22
+Patch4:     pcre2-10.22-Missed-typo-fixed.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -109,6 +113,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -208,6 +214,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Wed Oct 19 2016 Petr Pisar <ppisar@redhat.com> - 10.22-3
 - Fix displaying a callout position in pcretest output with an escape sequence
   greater than \x{ff}
+- Fix pcrepattern(3) documentation
 
 * Mon Aug 29 2016 Petr Pisar <ppisar@redhat.com> - 10.22-2
 - Fix matching characters above 255 when a negative character type was used

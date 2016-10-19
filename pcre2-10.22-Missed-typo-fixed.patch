@@ -1,0 +1,36 @@
+From 509ecc74dcbbcfabc01f4d290c9cc8b62c921ac4 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 6 Oct 2016 17:48:24 +0000
+Subject: [PATCH] Missed typo fixed.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@561 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ doc/pcre2pattern.3 | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/doc/pcre2pattern.3 b/doc/pcre2pattern.3
+index 3cde744..f9d1f53 100644
+--- a/doc/pcre2pattern.3
++++ b/doc/pcre2pattern.3
+@@ -365,10 +365,10 @@ When PCRE2 is compiled in EBCDIC mode, \ea, \ee, \ef, \en, \er, and \et
+ generate the appropriate EBCDIC code values. The \ec escape is processed
+ as specified for Perl in the \fBperlebcdic\fP document. The only characters
+ that are allowed after \ec are A-Z, a-z, or one of @, [, \e, ], ^, _, or ?. Any
+-other character provokes a compile-time error. The sequence \e@ encodes
+-character code 0; the letters (in either case) encode characters 1-26 (hex 01
+-to hex 1A); [, \e, ], ^, and _ encode characters 27-31 (hex 1B to hex 1F), and
+-\ec? becomes either 255 (hex FF) or 95 (hex 5F).
++other character provokes a compile-time error. The sequence \ec@ encodes
++character code 0; after \ec the letters (in either case) encode characters 1-26
++(hex 01 to hex 1A); [, \e, ], ^, and _ encode characters 27-31 (hex 1B to hex
++1F), and \ec? becomes either 255 (hex FF) or 95 (hex 5F).
+ .P
+ Thus, apart from \ec?, these escapes generate the same character code values as
+ they do in an ASCII environment, though the meanings of the values mostly
+-- 
+2.7.4
+
