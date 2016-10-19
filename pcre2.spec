@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.22
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -141,7 +141,7 @@ autoreconf -vif
 %global optflags %{optflags} -fno-strict-aliasing
 %endif
 %configure \
-%ifarch s390 s390x sparc64 sparcv9
+%ifarch s390 s390x sparc64 sparcv9 riscv64
     --disable-jit \
     --disable-pcre2grep-jit \
 %else
@@ -227,6 +227,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Oct 19 2016 Richard W.M. Jones <@redhat.com> - 10.22-4
+- Disable the JIT on riscv64.
+
 * Wed Oct 19 2016 Petr Pisar <ppisar@redhat.com> - 10.22-3
 - Fix displaying a callout position in pcretest output with an escape sequence
   greater than \x{ff}
