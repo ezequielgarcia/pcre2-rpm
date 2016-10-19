@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.22
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -27,6 +27,9 @@ Patch0:     pcre2-10.10-Fix-multilib.patch
 # without enabled UCP in a positive class, in upstream after 10.22,
 # upstream bug #1866
 Patch1:     pcre2-10.22-Fix-bug-that-caused-chars-255-not-to-be-matched-by-c.patch
+# Fix displaying a callout position in pcretest output with an escape sequence
+# greater than \x{ff}, in upstream after 10.22
+Patch2:     pcre2-10.22-Fix-callout-display-bug-in-pcre2test.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -105,6 +108,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -201,6 +205,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Oct 19 2016 Petr Pisar <ppisar@redhat.com> - 10.22-3
+- Fix displaying a callout position in pcretest output with an escape sequence
+  greater than \x{ff}
+
 * Mon Aug 29 2016 Petr Pisar <ppisar@redhat.com> - 10.22-2
 - Fix matching characters above 255 when a negative character type was used
   without enabled UCP in a positive class (upstream bug #1866)

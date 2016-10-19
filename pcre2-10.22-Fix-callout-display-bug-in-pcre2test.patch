@@ -1,0 +1,74 @@
+From 3caf27da49d315b53783af8e602f6be09b435bc2 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Wed, 5 Oct 2016 16:53:34 +0000
+Subject: [PATCH] Fix callout display bug in pcre2test.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@557 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 10.22.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2test.c      | 4 ++++
+ testdata/testinput5  | 3 +++
+ testdata/testoutput5 | 9 +++++++++
+ 3 files changed, 16 insertions(+)
+
+diff --git a/src/pcre2test.c b/src/pcre2test.c
+index a8dffa3..96520e8 100644
+--- a/src/pcre2test.c
++++ b/src/pcre2test.c
+@@ -2525,6 +2525,8 @@ static int
+ pchar(uint32_t c, BOOL utf, FILE *f)
+ {
+ int n = 0;
++char tempbuffer[16];
++
+ if (PRINTOK(c))
+   {
+   if (f != NULL) fprintf(f, "%c", c);
+@@ -2546,6 +2548,8 @@ if (c < 0x100)
+   }
+ 
+ if (f != NULL) n = fprintf(f, "\\x{%02x}", c);
++  else n = sprintf(tempbuffer, "\\x{%02x}", c);
++
+ return n >= 0 ? n : 0;
+ }
+ 
+diff --git a/testdata/testinput5 b/testdata/testinput5
+index 1f44ceb..461302a 100644
+--- a/testdata/testinput5
++++ b/testdata/testinput5
+@@ -1724,4 +1724,7 @@
+ \= Expect no match
+     \x{10000}
+ 
++/../utf,auto_callout
++    \n\x{123}\x{123}\x{123}\x{123}
++
+ # End of testinput5 
+diff --git a/testdata/testoutput5 b/testdata/testoutput5
+index b670677..e661033 100644
+--- a/testdata/testoutput5
++++ b/testdata/testoutput5
+@@ -4160,4 +4160,13 @@ No match
+     \x{10000}
+ No match
+ 
++/../utf,auto_callout
++    \n\x{123}\x{123}\x{123}\x{123}
++--->\x{0a}\x{123}\x{123}\x{123}\x{123}
++ +0 ^                                      .
++ +0       ^                                .
++ +1       ^      ^                         .
++ +2       ^             ^                  
++ 0: \x{123}\x{123}
++
+ # End of testinput5 
+-- 
+2.7.4
+
