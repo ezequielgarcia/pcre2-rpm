@@ -34,6 +34,12 @@ Patch2:     pcre2-10.22-Fix-callout-display-bug-in-pcre2test.patch
 Patch3:     pcre2-10.22-Fix-typos-in-documentation.patch
 # 2/2 Fix pcrepattern(3) documentation, in upstream after 10.22
 Patch4:     pcre2-10.22-Missed-typo-fixed.patch
+# 1/2 Fix miscopmilation of conditionals when a group name start with "R",
+# fixed in upstream after 10.22 by code refactoring, upstream bug #1873
+Patch5:     pcre2-10.22-Fix-bad-conditional-recursion-test-bug-when-a-group-.patch
+# 2/2 Tests for Fix-bad-conditional-recursion-test-bug-when-a-group-.patch,
+# in upstream after 10.22, upstream bug #1873
+Patch6:     pcre2-10.22-Add-test-for-bug-already-fixed-by-the-refactoring.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -115,6 +121,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
+%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -215,6 +223,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Fix displaying a callout position in pcretest output with an escape sequence
   greater than \x{ff}
 - Fix pcrepattern(3) documentation
+- Fix miscopmilation of conditionals when a group name start with "R"
+  (upstream bug #1873)
 
 * Mon Aug 29 2016 Petr Pisar <ppisar@redhat.com> - 10.22-2
 - Fix matching characters above 255 when a negative character type was used

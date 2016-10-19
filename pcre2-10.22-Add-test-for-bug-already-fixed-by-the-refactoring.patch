@@ -1,0 +1,73 @@
+From 4fb3fa035510f780258a1d3e3e1315039038e1df Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 13 Oct 2016 16:08:08 +0000
+Subject: [PATCH] Add test for bug already fixed by the refactoring.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@564 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 10.22.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ testdata/testinput2  |  4 ++++
+ testdata/testoutput2 | 28 ++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+)
+
+diff --git a/testdata/testinput2 b/testdata/testinput2
+index 9d0759f..2d4bbe5 100644
+--- a/testdata/testinput2
++++ b/testdata/testinput2
+@@ -4819,4 +4819,8 @@ a)"xI
+ 
+ /\[AB]{6000000000000000000000}/expand
+ 
++/(?<RA>abc)(?(R)xyz)/B
++
++/(?<R>abc)(?(R)xyz)/B
++
+ # End of testinput2 
+diff --git a/testdata/testoutput2 b/testdata/testoutput2
+index 01cb193..ef7e329 100644
+--- a/testdata/testoutput2
++++ b/testdata/testoutput2
+@@ -15195,6 +15195,34 @@ No match
+ /\[AB]{6000000000000000000000}/expand
+ ** Pattern repeat count too large
+ 
++/(?<RA>abc)(?(R)xyz)/B
++------------------------------------------------------------------
++        Bra
++        CBra 1
++        abc
++        Ket
++        Cond
++        Cond recurse any
++        xyz
++        Ket
++        Ket
++        End
++------------------------------------------------------------------
++
++/(?<R>abc)(?(R)xyz)/B
++------------------------------------------------------------------
++        Bra
++        CBra 1
++        abc
++        Ket
++        Cond
++      1 Cond ref
++        xyz
++        Ket
++        Ket
++        End
++------------------------------------------------------------------
++
+ # End of testinput2 
+ Error -63: PCRE2_ERROR_BADDATA (unknown error number)
+ Error -62: bad serialized data
+-- 
+2.7.4
+
