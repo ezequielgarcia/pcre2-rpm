@@ -26,7 +26,7 @@ Patch0:     pcre2-10.10-Fix-multilib.patch
 # Fix matching characters above 255 when a negative character type was used
 # without enabled UCP in a positive class, in upstream after 10.22,
 # upstream bug #1866
-Patch1:     pcre-10.22-Fix-bug-that-caused-chars-255-not-to-be-matched-by-c.patch
+Patch1:     pcre2-10.22-Fix-bug-that-caused-chars-255-not-to-be-matched-by-c.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
