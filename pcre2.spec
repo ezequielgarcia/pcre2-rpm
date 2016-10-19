@@ -40,6 +40,9 @@ Patch5:     pcre2-10.22-Fix-bad-conditional-recursion-test-bug-when-a-group-.pat
 # 2/2 Tests for Fix-bad-conditional-recursion-test-bug-when-a-group-.patch,
 # in upstream after 10.22, upstream bug #1873
 Patch6:     pcre2-10.22-Add-test-for-bug-already-fixed-by-the-refactoring.patch
+# Fix internal option documentation in pcre2pattern(3), in upstream after 10.22,
+# upstream bug #1875
+Patch7:     pcre2-10.22-Fix-documentation-error.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -123,6 +126,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -225,6 +229,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Fix pcrepattern(3) documentation
 - Fix miscopmilation of conditionals when a group name start with "R"
   (upstream bug #1873)
+- Fix internal option documentation in pcre2pattern(3) (upstream bug #1875)
 
 * Mon Aug 29 2016 Petr Pisar <ppisar@redhat.com> - 10.22-2
 - Fix matching characters above 255 when a negative character type was used
