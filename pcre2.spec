@@ -43,6 +43,9 @@ Patch6:     pcre2-10.22-Add-test-for-bug-already-fixed-by-the-refactoring.patch
 # Fix internal option documentation in pcre2pattern(3), in upstream after 10.22,
 # upstream bug #1875
 Patch7:     pcre2-10.22-Fix-documentation-error.patch
+# Fix optimization bugs for patterns starting with lookaheads,
+# in upstream after 10.22, upstream bug #1882
+Patch8:     pcre2-10.22-Fix-optimization-bugs-when-pattern-starts-with-looka.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -127,6 +130,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -230,6 +234,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Fix miscopmilation of conditionals when a group name start with "R"
   (upstream bug #1873)
 - Fix internal option documentation in pcre2pattern(3) (upstream bug #1875)
+- Fix optimization bugs for patterns starting with lookaheads
+  (upstream bug #1882)
 
 * Mon Aug 29 2016 Petr Pisar <ppisar@redhat.com> - 10.22-2
 - Fix matching characters above 255 when a negative character type was used
