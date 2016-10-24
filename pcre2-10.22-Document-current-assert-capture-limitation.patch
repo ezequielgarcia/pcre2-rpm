@@ -1,0 +1,38 @@
+From 3e67484ef38a7c13619ea44f18047644d8f49dca Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sun, 23 Oct 2016 15:43:42 +0000
+Subject: [PATCH] Document current assert capture limitation.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@575 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 10.22.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ doc/pcre2pattern.3 | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/doc/pcre2pattern.3 b/doc/pcre2pattern.3
+index 57b0014..3ca1088 100644
+--- a/doc/pcre2pattern.3
++++ b/doc/pcre2pattern.3
+@@ -2219,6 +2219,13 @@ numbering the capturing subpatterns in the whole pattern. However, substring
+ capturing is carried out only for positive assertions. (Perl sometimes, but not
+ always, does do capturing in negative assertions.)
+ .P
++WARNING: If a positive assertion containing one or more capturing subpatterns 
++succeeds, but failure to match later in the pattern causes backtracking over 
++this assertion, the captures within the assertion are reset only if no higher 
++numbered captures are already set. This is, unfortunately, a fundamental 
++limitation of the current implementation; it may get removed in a future 
++reworking.
++.P
+ For compatibility with Perl, most assertion subpatterns may be repeated; though
+ it makes no sense to assert the same thing several times, the side effect of
+ capturing parentheses may occasionally be useful. However, an assertion that
+-- 
+2.7.4
+

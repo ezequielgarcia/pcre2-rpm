@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.22
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -46,6 +46,9 @@ Patch7:     pcre2-10.22-Fix-documentation-error.patch
 # Fix optimization bugs for patterns starting with lookaheads,
 # in upstream after 10.22, upstream bug #1882
 Patch8:     pcre2-10.22-Fix-optimization-bugs-when-pattern-starts-with-looka.patch
+# Document assert capture limitation, in upstream after 10.22,
+# upstream bug #1887
+Patch9:     pcre2-10.22-Document-current-assert-capture-limitation.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -131,6 +134,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -227,6 +231,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Oct 24 2016 Petr Pisar <ppisar@redhat.com> - 10.22-5
+- Document assert capture limitation (upstream bug #1887)
+
 * Wed Oct 19 2016 Richard W.M. Jones <@redhat.com> - 10.22-4
 - Disable the JIT on riscv64.
 
