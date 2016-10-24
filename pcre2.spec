@@ -49,6 +49,9 @@ Patch8:     pcre2-10.22-Fix-optimization-bugs-when-pattern-starts-with-looka.pat
 # Document assert capture limitation, in upstream after 10.22,
 # upstream bug #1887
 Patch9:     pcre2-10.22-Document-current-assert-capture-limitation.patch
+# Ignore offset modifier in pcre2test in POSIX mode, in upstream after 10.22,
+# upstream bug #1898
+Patch10:    pcre2-10.22-The-offset-modifier-in-pcre2test-was-not-being-ignor.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -135,6 +138,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -233,6 +237,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Mon Oct 24 2016 Petr Pisar <ppisar@redhat.com> - 10.22-5
 - Document assert capture limitation (upstream bug #1887)
+- Ignore offset modifier in pcre2test in POSIX mode (upstream bug #1898)
 
 * Wed Oct 19 2016 Richard W.M. Jones <@redhat.com> - 10.22-4
 - Disable the JIT on riscv64.

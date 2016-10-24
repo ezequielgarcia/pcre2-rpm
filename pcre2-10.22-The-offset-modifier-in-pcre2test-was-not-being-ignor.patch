@@ -1,0 +1,66 @@
+From f93df8c28fb7e00063612edaff46c3e9ad46e99d Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sun, 23 Oct 2016 16:18:15 +0000
+Subject: [PATCH] The "offset" modifier in pcre2test was not being ignored (as
+ documented) for POSIX.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@576 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 10.22
+
+diff --git a/src/pcre2test.c b/src/pcre2test.c
+index 039a4f0..30fd190 100644
+--- a/src/pcre2test.c
++++ b/src/pcre2test.c
+@@ -6065,6 +6065,7 @@ if ((pat_patctl.control & CTL_POSIX) != 0)
+   if (dat_datctl.get_numbers[0] >= 0 || dat_datctl.get_names[0] != 0)
+     prmsg(&msg, "get");
+   if (dat_datctl.jitstack != 0) prmsg(&msg, "jitstack");
++  if (dat_datctl.offset != 0) prmsg(&msg, "offset");
+ 
+   if ((dat_datctl.options & ~POSIX_SUPPORTED_MATCH_OPTIONS) != 0)
+     {
+@@ -6087,9 +6088,8 @@ if ((pat_patctl.control & CTL_POSIX) != 0)
+   if ((dat_datctl.options & PCRE2_NOTBOL) != 0) eflags |= REG_NOTBOL;
+   if ((dat_datctl.options & PCRE2_NOTEOL) != 0) eflags |= REG_NOTEOL;
+   if ((dat_datctl.options & PCRE2_NOTEMPTY) != 0) eflags |= REG_NOTEMPTY;
+-
+-  rc = regexec(&preg, (const char *)pp + dat_datctl.offset,
+-    dat_datctl.oveccount, pmatch, eflags);
++  
++  rc = regexec(&preg, (const char *)pp, dat_datctl.oveccount, pmatch, eflags);
+   if (rc != 0)
+     {
+     (void)regerror(rc, &preg, (char *)pbuffer8, pbuffer8_size);
+diff --git a/testdata/testinput18 b/testdata/testinput18
+index e31b96e..ea47a4d 100644
+--- a/testdata/testinput18
++++ b/testdata/testinput18
+@@ -103,4 +103,7 @@
+ 
+ /\[A]{1000000}**/expand,regerror_buffsize=32
+ 
++//posix_nosub
++    \=offset=70000
++
+ # End of testdata/testinput18
+diff --git a/testdata/testoutput18 b/testdata/testoutput18
+index 3df298c..e2eb009 100644
+--- a/testdata/testoutput18
++++ b/testdata/testoutput18
+@@ -157,4 +157,9 @@ Failed: POSIX code 4: ? * + invalid at offset 100000
+ /\[A]{1000000}**/expand,regerror_buffsize=32
+ Failed: POSIX code 4: ? * + invalid at offset 1000001
+ 
++//posix_nosub
++    \=offset=70000
++** Ignored with POSIX interface: offset
++Matched with REG_NOSUB
++
+ # End of testdata/testinput18
+-- 
+2.7.4
+
