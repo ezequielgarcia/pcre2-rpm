@@ -64,6 +64,9 @@ Patch13:    pcre2-10.22-Fix-small-memory-leak-in-error-code-path.patch
 # Fix a buffer overflow in partial match test for CRLF in an empty buffer,
 # in upsteam after 10.22, upstream bug #1975
 Patch14:    pcre2-10.22-Fix-buffer-overflow-in-partial-match-test-for-CRLF-i.patch
+# Fix a crash in pcre2test when displaying a wide character with a set locate,
+# in upstream after 10.22, upstream bug #1976
+Patch15:    pcre2-10.22-Fix-crash-in-pcre2test-when-displaying-a-wide-charac.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -155,6 +158,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch12 -p1
 %patch13 -p1
 %patch14 -p1
+%patch15 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -256,6 +260,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Fix a memory leak and a typo in a documentation (upstream bug #1973)
 - Fix a buffer overflow in partial match test for CRLF in an empty buffer
   (upstream bug #1975)
+- Fix a crash in pcre2test when displaying a wide character with a set locate
+  (upstream bug #1976)
 
 * Tue Nov 08 2016 Petr Pisar <ppisar@redhat.com> - 10.22-6
 - Fix faulty auto-anchoring patterns when .* is inside an assertion

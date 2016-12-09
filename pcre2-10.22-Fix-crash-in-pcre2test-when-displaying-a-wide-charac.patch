@@ -1,0 +1,112 @@
+From 953d56f59bb13f5d6ebef31597b48e446659f368 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 8 Dec 2016 18:56:24 +0000
+Subject: [PATCH] Fix crash in pcre2test when displaying a wide character with
+ a locale set.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Petr Pisar: Ported to 10.22:
+
+commit f35783211054aec20925a2efdf936a00d12db0df
+Author: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date:   Thu Dec 8 18:56:24 2016 +0000
+
+    Fix crash in pcre2test when displaying a wide character with a locale set.
+
+    git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@613 6239d852-aaf2-0410-a92c-
+79f79f948069
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2test.c      |  8 ++++----
+ testdata/testinput5  | 11 +++++++++++
+ testdata/testoutput5 | 13 +++++++++++++
+ 3 files changed, 28 insertions(+), 4 deletions(-)
+
+diff --git a/src/pcre2test.c b/src/pcre2test.c
+index 96d9075..48b0f27 100644
+--- a/src/pcre2test.c
++++ b/src/pcre2test.c
+@@ -211,7 +211,7 @@ systems that differ in their output from isprint() even in the "C" locale. */
+ #define PRINTABLE(c) ((c) >= 32 && (c) < 127)
+ #endif
+ 
+-#define PRINTOK(c) ((locale_tables != NULL)? isprint(c) : PRINTABLE(c))
++#define PRINTOK(c) ((use_tables != NULL && c < 256)? isprint(c) : PRINTABLE(c))
+ 
+ /* We have to include some of the library source files because we need
+ to use some of the macros, internal structure definitions, and other internal
+@@ -823,6 +823,7 @@ static regex_t preg = { NULL, NULL, 0, 0, 0 };
+ 
+ static int *dfa_workspace = NULL;
+ static const uint8_t *locale_tables = NULL;
++static const uint8_t *use_tables = NULL;
+ static uint8_t locale_name[32];
+ 
+ /* We need buffers for building 16/32-bit strings; 8-bit strings don't need
+@@ -4464,7 +4465,6 @@ process_pattern(void)
+ BOOL utf;
+ uint32_t k;
+ uint8_t *p = buffer;
+-const uint8_t *use_tables;
+ unsigned int delimiter = *p++;
+ int errorcode;
+ void *use_pat_context;
+@@ -4922,8 +4922,8 @@ if ((pat_patctl.control & CTL_NL_SET) == 0 && local_newline_default != 0)
+   SETFLD(pat_context, newline_convention, local_newline_default);
+   }
+ 
+-/* The nullcontext modifier is used to test calling pcre2_compile() with a NULL
+-context. */
++/* The null_context modifier is used to test calling pcre2_compile() with a
++NULL context. */
+ 
+ use_pat_context = ((pat_patctl.control & CTL_NULLCONTEXT) != 0)?
+   NULL : PTR(pat_context);
+diff --git a/testdata/testinput5 b/testdata/testinput5
+index 461302a..e9b4d83 100644
+--- a/testdata/testinput5
++++ b/testdata/testinput5
+@@ -1727,4 +1727,15 @@
+ /../utf,auto_callout
+     \n\x{123}\x{123}\x{123}\x{123}
+ 
++# These three test a bug fix that was not clearing up after a locale setting
++# when the test or a subsequent one matched a wide character.
++
++//locale=C
++
++/[\P{Yi}]/utf
++\x{2f000}
++
++/[\P{Yi}]/utf,locale=C
++\x{2f000}
++
+ # End of testinput5 
+diff --git a/testdata/testoutput5 b/testdata/testoutput5
+index e661033..993aba0 100644
+--- a/testdata/testoutput5
++++ b/testdata/testoutput5
+@@ -4169,4 +4169,17 @@ No match
+  +2       ^             ^                  
+  0: \x{123}\x{123}
+ 
++# These three test a bug fix that was not clearing up after a locale setting
++# when the test or a subsequent one matched a wide character.
++
++//locale=C
++
++/[\P{Yi}]/utf
++\x{2f000}
++ 0: \x{2f000}
++
++/[\P{Yi}]/utf,locale=C
++\x{2f000}
++ 0: \x{2f000}
++
+ # End of testinput5 
+-- 
+2.7.4
+
