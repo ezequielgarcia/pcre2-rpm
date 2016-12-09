@@ -58,6 +58,9 @@ Patch11:    pcre2-10.22-Fix-auto-anchor-bug-when-.-is-inside-an-assertion.patch
 # Fix pcre2-config --libs-posix output, in upstream after 10.22,
 # upstream bug #1924
 Patch12:    pcre2-10.22-Correct-libpcre2posix-typos-should-be-libpcre2-posix.patch
+# Fix a memory leak and a typo in a documentation, in upstream after 10.22,
+# upstream bug #1973
+Patch13:    pcre2-10.22-Fix-small-memory-leak-in-error-code-path.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -147,6 +150,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
+%patch13 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -245,6 +249,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Fri Dec 09 2016 Petr Pisar <ppisar@redhat.com> - 10.22-7
 - Fix pcre2-config --libs-posix output (upstream bug #1924)
+- Fix a memory leak and a typo in a documentation (upstream bug #1973)
 
 * Tue Nov 08 2016 Petr Pisar <ppisar@redhat.com> - 10.22-6
 - Fix faulty auto-anchoring patterns when .* is inside an assertion

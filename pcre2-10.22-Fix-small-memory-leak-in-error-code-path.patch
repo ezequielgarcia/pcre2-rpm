@@ -1,0 +1,54 @@
+From 13d269bc77ecca631b4601d25365e65d3d4fe733 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 8 Dec 2016 16:52:26 +0000
+Subject: [PATCH] Fix small memory leak in error code path.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Petr Pisar: Ported to 10.22:
+
+commit 5aaf9811e3fed9c86b39e3ecada0454240b7caae
+Author: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date:   Thu Dec 8 16:52:26 2016 +0000
+
+    Fix small memory leak in error code path.
+
+    git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@611 6239d852-aaf2-0410-a92c-79f79f948069
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2_compile.c | 4 ++--
+ src/pcre2test.c     | 1 +
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index b9b9361..ed81639 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -191,8 +191,8 @@ comparison). */
+ locale, and may mark arbitrary characters as digits. We want to recognize only
+ 0-9, a-z, and A-Z as hex digits, which is why we have a private table here. It
+ costs 256 bytes, but it is a lot faster than doing character value tests (at
+-least in some simple cases I timed), and in some applications one wants PCRE to
+-compile efficiently as well as match efficiently. The value in the table is
++least in some simple cases I timed), and in some applications one wants PCRE2
++to compile efficiently as well as match efficiently. The value in the table is
+ the binary hex digit value, or 0xff for non-hex digits. */
+ 
+ /* This is the "normal" case, for ASCII systems, and EBCDIC systems running in
+diff --git a/src/pcre2test.c b/src/pcre2test.c
+index 1844375..96d9075 100644
+--- a/src/pcre2test.c
++++ b/src/pcre2test.c
+@@ -4411,6 +4411,7 @@ switch(cmd)
+   if (fread(serial, 1, serial_size, f) != serial_size)
+     {
+     fprintf(outfile, "** Wrong return from fread()\n");
++    free(serial);
+     return PR_ABEND;
+     }
+   fclose(f);
+-- 
+2.7.4
+
