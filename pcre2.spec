@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.22
-Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -55,6 +55,9 @@ Patch10:    pcre2-10.22-The-offset-modifier-in-pcre2test-was-not-being-ignor.pat
 # Fix faulty auto-anchoring patterns when .* is inside an assertion,
 # in upstream after 10.22
 Patch11:    pcre2-10.22-Fix-auto-anchor-bug-when-.-is-inside-an-assertion.patch
+# Fix pcre2-config --libs-posix output, in upstream after 10.22,
+# upstream bug #1924
+Patch12:    pcre2-10.22-Correct-libpcre2posix-typos-should-be-libpcre2-posix.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -143,6 +146,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch9 -p1
 %patch10 -p1
 %patch11 -p1
+%patch12 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -239,6 +243,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Dec 09 2016 Petr Pisar <ppisar@redhat.com> - 10.22-7
+- Fix pcre2-config --libs-posix output (upstream bug #1924)
+
 * Tue Nov 08 2016 Petr Pisar <ppisar@redhat.com> - 10.22-6
 - Fix faulty auto-anchoring patterns when .* is inside an assertion
 
