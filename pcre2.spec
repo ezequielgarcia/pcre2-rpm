@@ -70,6 +70,9 @@ Patch15:    pcre2-10.22-Fix-crash-in-pcre2test-when-displaying-a-wide-charac.pat
 # Fix a crash when doing an extended substitution for \p, \P, or \X,
 # in upstream after 10.22, upstream bug #1977
 Patch16:    pcre2-10.22-Fix-NULL-defer-in-extended-substition-for-p-P-or-X.patch
+# Fix a crash in substitution if starting offest was specified beyond the
+# subject end, in upstream after 10.22, upstream bug #1992
+Patch17:    pcre2-10.22-Fix-OOB-error-in-substitute-with-start-offset-longer.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -163,6 +166,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch14 -p1
 %patch15 -p1
 %patch16 -p1
+%patch17 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -262,6 +266,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Fri Dec 16 2016 Petr Pisar <ppisar@redhat.com> - 10.22-8
 - Fix a crash when doing an extended substitution for \p, \P, or \X
   (upstream bug #1977)
+- Fix a crash in substitution if starting offest was specified beyond the
+  subject end (upstream bug #1992)
 
 * Fri Dec 09 2016 Petr Pisar <ppisar@redhat.com> - 10.22-7
 - Fix pcre2-config --libs-posix output (upstream bug #1924)
