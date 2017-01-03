@@ -1,0 +1,140 @@
+From a83027bb4b195c879d504da051571f22a5ac7ca3 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 26 Dec 2016 17:11:18 +0000
+Subject: [PATCH] Fix class bug when UCP but not UTF was set and all wide
+ characters need to be included.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@628 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ ChangeLog                | 4 ++++
+ src/pcre2_compile.c      | 8 +++++++-
+ testdata/testinput10     | 2 ++
+ testdata/testinput12     | 2 ++
+ testdata/testoutput10    | 8 ++++++++
+ testdata/testoutput12-16 | 8 ++++++++
+ testdata/testoutput12-32 | 8 ++++++++
+ 7 files changed, 39 insertions(+), 1 deletion(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 6156b24..d276feb 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -255,6 +255,10 @@ This lifts a restriction on the number of branches in a group (more than about
+ 38. Add the "-ac" command line option to pcre2test as a synonym for "-pattern
+ auto_callout".
+ 
++39. In a library with Unicode support, incorrect data was compiled for a
++pattern with PCRE2_UCP set without PCRE2_UTF if a class required all wide
++characters to match (for example, /[\s[:^ascii:]]/).
++
+ 
+ Version 10.22 29-July-2016
+ --------------------------
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index 9dc9c98..fce226b 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -4927,9 +4927,13 @@ for (;; pptr++)
+           automatically handled by the use of OP_CLASS or OP_NCLASS, but an
+           explicit range is needed for OP_XCLASS. Setting a flag here
+           causes the range to be generated later when it is known that
+-          OP_XCLASS is required. */
++          OP_XCLASS is required. In the 8-bit library this is relevant only in 
++          utf mode, since no wide characters can exist otherwise. */
+ 
+           default:
++#if PCRE2_CODE_UNIT_WIDTH == 8
++          if (utf)
++#endif 
+           match_all_or_no_wide_chars |= local_negate;
+           break;
+           }
+@@ -5217,6 +5221,8 @@ for (;; pptr++)
+     all wide characters (depending on whether the whole class is or is not
+     negated). This requirement is indicated by match_all_or_no_wide_chars being
+     true. We do this by including an explicit range, which works in both cases.
++    This applies only in UTF and 16-bit and 32-bit non-UTF modes, since there
++    cannot be any wide characters in 8-bit non-UTF mode.
+ 
+     When there *are* properties in a positive UTF-8 or any 16-bit or 32_bit
+     class where \S etc is present without PCRE2_UCP, causing an extended class
+diff --git a/testdata/testinput10 b/testdata/testinput10
+index a1806ae..85d2005 100644
+--- a/testdata/testinput10
++++ b/testdata/testinput10
+@@ -456,4 +456,6 @@
+ 
+ /(*:*++++++++++++''''''''''''''''''''+''+++'+++x+++++++++++++++++++++++++++++++++++(++++++++++++++++++++:++++++%++:''''''''''''''''''''''''+++++++++++++++++++++++++++++++++++++++++++++++++++++-++++++++k+++++++''''+++'+++++++++++++++++++++++''''++++++++++++':ƿ)/utf
+ 
++/[\s[:^ascii:]]/B,ucp
++
+ # End of testinput10
+diff --git a/testdata/testinput12 b/testdata/testinput12
+index 5b29f41..c3b2bfc 100644
+--- a/testdata/testinput12
++++ b/testdata/testinput12
+@@ -358,4 +358,6 @@
+ \= Expect no match
+     123     
+ 
++/[\s[:^ascii:]]/B,ucp
++
+ # End of testinput12
+diff --git a/testdata/testoutput10 b/testdata/testoutput10
+index 3c35f0b..31b7d00 100644
+--- a/testdata/testoutput10
++++ b/testdata/testoutput10
+@@ -1567,4 +1567,12 @@ No match
+ /(*:*++++++++++++''''''''''''''''''''+''+++'+++x+++++++++++++++++++++++++++++++++++(++++++++++++++++++++:++++++%++:''''''''''''''''''''''''+++++++++++++++++++++++++++++++++++++++++++++++++++++-++++++++k+++++++''''+++'+++++++++++++++++++++++''''++++++++++++':ƿ)/utf
+ Failed: error 176 at offset 259: name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)
+ 
++/[\s[:^ascii:]]/B,ucp
++------------------------------------------------------------------
++        Bra
++        [\x80-\xff\p{Xsp}]
++        Ket
++        End
++------------------------------------------------------------------
++
+ # End of testinput10
+diff --git a/testdata/testoutput12-16 b/testdata/testoutput12-16
+index f0f2230..3b5a0cd 100644
+--- a/testdata/testoutput12-16
++++ b/testdata/testoutput12-16
+@@ -1407,4 +1407,12 @@ Subject length lower bound = 2
+     123     
+ No match
+ 
++/[\s[:^ascii:]]/B,ucp
++------------------------------------------------------------------
++        Bra
++        [\x80-\xff\p{Xsp}\x{100}-\x{ffff}]
++        Ket
++        End
++------------------------------------------------------------------
++
+ # End of testinput12
+diff --git a/testdata/testoutput12-32 b/testdata/testoutput12-32
+index 3718b27..1496159 100644
+--- a/testdata/testoutput12-32
++++ b/testdata/testoutput12-32
+@@ -1401,4 +1401,12 @@ Failed: error -28: UTF-32 error: code points greater than 0x10ffff are not defin
+     123     
+ No match
+ 
++/[\s[:^ascii:]]/B,ucp
++------------------------------------------------------------------
++        Bra
++        [\x80-\xff\p{Xsp}\x{100}-\x{ffffffff}]
++        Ket
++        End
++------------------------------------------------------------------
++
+ # End of testinput12
+-- 
+2.7.4
+
