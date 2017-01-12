@@ -1,0 +1,81 @@
+From b6c92f4b6b35ce09afcbfd71170b72d3a8bb063d Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Wed, 11 Jan 2017 17:02:27 +0000
+Subject: [PATCH] Fix pcre2test mishandling "end before start" return with
+ POSIX interface.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@650 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 10.22.
+
+diff --git a/src/pcre2test.c b/src/pcre2test.c
+index d9c8ed8..5ea245d 100644
+--- a/src/pcre2test.c
++++ b/src/pcre2test.c
+@@ -6184,18 +6184,27 @@ if ((pat_patctl.control & CTL_POSIX) != 0)
+       {
+       if (pmatch[i].rm_so >= 0)
+         {
++        PCRE2_SIZE start = pmatch[i].rm_so;
++        PCRE2_SIZE end = pmatch[i].rm_eo;
++        if (start > end)
++          {
++          start = pmatch[i].rm_eo;
++          end = pmatch[i].rm_so;
++          fprintf(outfile, "Start of matched string is beyond its end - "
++            "displaying from end to start.\n");
++          }
+         fprintf(outfile, "%2d: ", (int)i);
+-        PCHARSV(pp, pmatch[i].rm_so,
+-          pmatch[i].rm_eo - pmatch[i].rm_so, utf, outfile);
++        PCHARSV(pp, start, end - start, utf, outfile);
+         fprintf(outfile, "\n");
++
+         if ((i == 0 && (dat_datctl.control & CTL_AFTERTEXT) != 0) ||
+             (dat_datctl.control & CTL_ALLAFTERTEXT) != 0)
+           {
+           fprintf(outfile, "%2d+ ", (int)i);
+-          PCHARSV(pp, pmatch[i].rm_eo, len - pmatch[i].rm_eo,
+-            utf, outfile);
+-          fprintf(outfile, "\n");
+-          }
++          /* Note: don't use the start/end variables here because we want to
++          show the text from what is reported as the end. */
++          PCHARSV(pp, pmatch[i].rm_eo, len - pmatch[i].rm_eo, utf, outfile);
++          fprintf(outfile, "\n"); }
+         }
+       }
+     }
+diff --git a/testdata/testinput18 b/testdata/testinput18
+index ea47a4d..bd1c6ad 100644
+--- a/testdata/testinput18
++++ b/testdata/testinput18
+@@ -106,4 +106,7 @@
+ //posix_nosub
+     \=offset=70000
+ 
++/(?=(a\K))/
++    a
++     
+ # End of testdata/testinput18
+diff --git a/testdata/testoutput18 b/testdata/testoutput18
+index 51c7d21..fd6fac3 100644
+--- a/testdata/testoutput18
++++ b/testdata/testoutput18
+@@ -162,4 +162,10 @@ Failed: POSIX code 4: ? * + invalid at offset 1000001
+ ** Ignored with POSIX interface: offset
+ Matched with REG_NOSUB
+ 
++/(?=(a\K))/
++    a
++Start of matched string is beyond its end - displaying from end to start.
++ 0: a
++ 1: a
++     
+ # End of testdata/testinput18
+-- 
+2.7.4
+

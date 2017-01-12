@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.22
-Release:    %{?rcversion:0.}9%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}10%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -75,6 +75,9 @@ Patch16:    pcre2-10.22-Fix-NULL-defer-in-extended-substition-for-p-P-or-X.patch
 Patch17:    pcre2-10.22-Fix-OOB-error-in-substitute-with-start-offset-longer.patch
 # Fix compiling a class with UCP and without UTF, in upstream after 10.22
 Patch18:    pcre2-10.22-Fix-class-bug-when-UCP-but-not-UTF-was-set-and-all-w.patch
+# Fix an out-of-bound read in pcre2test tool within POSIX mode,
+# in upstream after 10.22, upstream bug #2008
+Patch19:    pcre2-10.22-Fix-pcre2test-mishandling-end-before-start-return-wi.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -170,6 +173,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch16 -p1
 %patch17 -p1
 %patch18 -p1
+%patch19 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -266,6 +270,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jan 12 2017 Petr Pisar <ppisar@redhat.com> - 10.22-10
+- Fix an out-of-bound read in pcre2test tool within POSIX mode
+  (upstream bug #2008)
+
 * Tue Jan 03 2017 Petr Pisar <ppisar@redhat.com> - 10.22-9
 - Fix compiling a class with UCP and without UTF
 
