@@ -1,8 +1,8 @@
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.22
-Release:    %{?rcversion:0.}10%{?rcversion:.%rcversion}%{?dist}.1
+Version:    10.23
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -12,72 +12,32 @@ Group:      System Environment/Libraries
 # LICENSE:                              BSD text and declares Public Domain
 #                                       for testdata
 #Not distributed in binary package
+# aclocal.m4:                           FSFULLR and GPLv2+ with exception
 # ar-lib:                               GPLv2+ with exception
 # autotools:                            GPLv3+ with exception
+# compile:                              GPLv2+ with exception
+# config.sub:                           GPLv3+ with exception
+# depcomp:                              GPLv2+ with exception
 # install-sh:                           MIT
 # ltmain.sh:                            GPLv2+ with exception and GPLv3+ with
 #                                       exception and GPLv3+
+# m4/ax_pthread.m4:                     GPLv3+ with exception
+# m4/libtool.m4:                        FSFULLR and GPLv2+ with exception
+# m4/ltoptions.m4:                      FSFULLR
+# m4/ltsugar.m4:                        FSFULLR
+# m4/ltversion.m4:                      FSFULLR
+# m4/lt~obsolete.m4:                    FSFULLR
+# m4/pcre2_visibility.m4:               FSFULLR
+# missing:                              GPLv2+ with exception
+# test-driver:                          GPLv2+ with exception
 # testdata:                             Public Domain
 License:    BSD
 URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Fix matching characters above 255 when a negative character type was used
-# without enabled UCP in a positive class, in upstream after 10.22,
-# upstream bug #1866
-Patch1:     pcre2-10.22-Fix-bug-that-caused-chars-255-not-to-be-matched-by-c.patch
-# Fix displaying a callout position in pcretest output with an escape sequence
-# greater than \x{ff}, in upstream after 10.22
-Patch2:     pcre2-10.22-Fix-callout-display-bug-in-pcre2test.patch
-# 1/2 Fix pcrepattern(3) documentation, un upstream after 10.22
-Patch3:     pcre2-10.22-Fix-typos-in-documentation.patch
-# 2/2 Fix pcrepattern(3) documentation, in upstream after 10.22
-Patch4:     pcre2-10.22-Missed-typo-fixed.patch
-# 1/2 Fix miscopmilation of conditionals when a group name start with "R",
-# fixed in upstream after 10.22 by code refactoring, upstream bug #1873
-Patch5:     pcre2-10.22-Fix-bad-conditional-recursion-test-bug-when-a-group-.patch
-# 2/2 Tests for Fix-bad-conditional-recursion-test-bug-when-a-group-.patch,
-# in upstream after 10.22, upstream bug #1873
-Patch6:     pcre2-10.22-Add-test-for-bug-already-fixed-by-the-refactoring.patch
-# Fix internal option documentation in pcre2pattern(3), in upstream after 10.22,
-# upstream bug #1875
-Patch7:     pcre2-10.22-Fix-documentation-error.patch
-# Fix optimization bugs for patterns starting with lookaheads,
-# in upstream after 10.22, upstream bug #1882
-Patch8:     pcre2-10.22-Fix-optimization-bugs-when-pattern-starts-with-looka.patch
-# Document assert capture limitation, in upstream after 10.22,
-# upstream bug #1887
-Patch9:     pcre2-10.22-Document-current-assert-capture-limitation.patch
-# Ignore offset modifier in pcre2test in POSIX mode, in upstream after 10.22,
-# upstream bug #1898
-Patch10:    pcre2-10.22-The-offset-modifier-in-pcre2test-was-not-being-ignor.patch
-# Fix faulty auto-anchoring patterns when .* is inside an assertion,
-# in upstream after 10.22
-Patch11:    pcre2-10.22-Fix-auto-anchor-bug-when-.-is-inside-an-assertion.patch
-# Fix pcre2-config --libs-posix output, in upstream after 10.22,
-# upstream bug #1924
-Patch12:    pcre2-10.22-Correct-libpcre2posix-typos-should-be-libpcre2-posix.patch
-# Fix a memory leak and a typo in a documentation, in upstream after 10.22,
-# upstream bug #1973
-Patch13:    pcre2-10.22-Fix-small-memory-leak-in-error-code-path.patch
-# Fix a buffer overflow in partial match test for CRLF in an empty buffer,
-# in upsteam after 10.22, upstream bug #1975
-Patch14:    pcre2-10.22-Fix-buffer-overflow-in-partial-match-test-for-CRLF-i.patch
-# Fix a crash in pcre2test when displaying a wide character with a set locate,
-# in upstream after 10.22, upstream bug #1976
-Patch15:    pcre2-10.22-Fix-crash-in-pcre2test-when-displaying-a-wide-charac.patch
-# Fix a crash when doing an extended substitution for \p, \P, or \X,
-# in upstream after 10.22, upstream bug #1977
-Patch16:    pcre2-10.22-Fix-NULL-defer-in-extended-substition-for-p-P-or-X.patch
-# Fix a crash in substitution if starting offest was specified beyond the
-# subject end, in upstream after 10.22, upstream bug #1992
-Patch17:    pcre2-10.22-Fix-OOB-error-in-substitute-with-start-offset-longer.patch
-# Fix compiling a class with UCP and without UTF, in upstream after 10.22
-Patch18:    pcre2-10.22-Fix-class-bug-when-UCP-but-not-UTF-was-set-and-all-w.patch
-# Fix an out-of-bound read in pcre2test tool within POSIX mode,
-# in upstream after 10.22, upstream bug #2008
-Patch19:    pcre2-10.22-Fix-pcre2test-mishandling-end-before-start-return-wi.patch
+# Fix a compiler warning, proposed to upstream but not portable before ISO C99
+Patch1:     pcre2-10.23-RC1-Fix-warning-on-printing-pointer-difference.patch
 # New libtool to get rid of RPATH and to use distribution autotools
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -156,24 +116,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -194,16 +136,18 @@ autoreconf -vif
     --disable-bsr-anycrlf \
     --disable-coverage \
     --disable-ebcdic \
+    --disable-fuzz-support \
     --disable-never-backslash-C \
     --enable-newline-is-lf \
     --enable-pcre2-8 \
     --enable-pcre2-16 \
     --enable-pcre2-32 \
-    --disable-pcre2test-libedit \
-    --enable-pcre2test-libreadline \
     --enable-pcre2grep-callout \
+    --enable-pcre2grep-jit \
     --disable-pcre2grep-libbz2 \
     --disable-pcre2grep-libz \
+    --disable-pcre2test-libedit \
+    --enable-pcre2test-libreadline \
     --disable-rebuild-chartables \
     --enable-shared \
     --enable-stack-for-recursion \
@@ -270,6 +214,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Jan 17 2017 Petr Pisar <ppisar@redhat.com> - 10.23-0.1.RC1
+- 10.23-RC1 bump
+
 * Thu Jan 12 2017 Igor Gnatenko <ignatenko@redhat.com> - 10.22-10.1
 - Rebuild for readline 7.x
 
