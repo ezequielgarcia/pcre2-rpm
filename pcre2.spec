@@ -2,7 +2,7 @@
 %global rcversion RC1
 Name:       pcre2
 Version:    10.23
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}.1
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -214,6 +214,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 10.23-0.1.RC1.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
 * Tue Jan 17 2017 Petr Pisar <ppisar@redhat.com> - 10.23-0.1.RC1
 - 10.23-RC1 bump
 
