@@ -45,6 +45,9 @@ Patch2:     pcre2-10.23-Fix-32-bit-non-UTF-property-test-crash.patch
 # Fix an internal error for a forward reference in a lookbehind with
 # PCRE2_ANCHORED, # oss-fuzz bug #865, in upstream after 10.23
 Patch3:     pcre2-10.23-Fix-crash-for-forward-reference-in-lookbehind-with-P.patch
+# Fix a pcre2test bug for global match with zero terminated subject,
+# upstream bug #2063, in upstream after 10.23
+Patch4:     pcre2-10.23-Fix-pcre2test-bug-for-global-match-with-zero-termina.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -124,6 +127,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -225,6 +229,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Mon Mar 20 2017 Petr Pisar <ppisar@redhat.com> - 10.23-3
 - Fix an internal error for a forward reference in a lookbehind with
   PCRE2_ANCHORED (oss-fuzz bug #865)
+- Fix a pcre2test bug for global match with zero terminated subject
+  (upstream bug #2063)
 
 * Mon Feb 27 2017 Petr Pisar <ppisar@redhat.com> - 10.23-2
 - Handle memmory allocation failures in pcre2test tool
