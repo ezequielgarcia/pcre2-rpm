@@ -38,7 +38,6 @@ Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:T
 Patch0:     pcre2-10.10-Fix-multilib.patch
 # Handle memmory allocation failures in pcre2test tool, in upstream after 10.23
 Patch1:     pcre2-10.23-Check-malloc-returns-in-pcre2test.patch
-# Fix a compiler warning, proposed to upstream but not portable before ISO C99
 # Fix a crash when finding a Unicode property for a character with a code
 # point greater than 0x10ffff in UTF-32 library while UTF mode is disabled,
 # upstream bug #2052, in upstream after 10.23
