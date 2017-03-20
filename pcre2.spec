@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.23
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -42,6 +42,9 @@ Patch1:     pcre2-10.23-Check-malloc-returns-in-pcre2test.patch
 # point greater than 0x10ffff in UTF-32 library while UTF mode is disabled,
 # upstream bug #2052, in upstream after 10.23
 Patch2:     pcre2-10.23-Fix-32-bit-non-UTF-property-test-crash.patch
+# Fix an internal error for a forward reference in a lookbehind with
+# PCRE2_ANCHORED, # oss-fuzz bug #865, in upstream after 10.23
+Patch3:     pcre2-10.23-Fix-crash-for-forward-reference-in-lookbehind-with-P.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -120,6 +123,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -218,6 +222,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Mar 20 2017 Petr Pisar <ppisar@redhat.com> - 10.23-3
+- Fix an internal error for a forward reference in a lookbehind with
+  PCRE2_ANCHORED (oss-fuzz bug #865)
+
 * Mon Feb 27 2017 Petr Pisar <ppisar@redhat.com> - 10.23-2
 - Handle memmory allocation failures in pcre2test tool
 - Fix a crash when finding a Unicode property for a character with a code
