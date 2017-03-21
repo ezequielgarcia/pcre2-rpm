@@ -38,9 +38,9 @@ Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:T
 Patch0:     pcre2-10.10-Fix-multilib.patch
 # Handle memmory allocation failures in pcre2test tool, in upstream after 10.23
 Patch1:     pcre2-10.23-Check-malloc-returns-in-pcre2test.patch
-# Fix a crash when finding a Unicode property for a character with a code
-# point greater than 0x10ffff in UTF-32 library while UTF mode is disabled,
-# upstream bug #2052, in upstream after 10.23
+# Fix CVE-2017-7186 (a crash when finding a Unicode property for a character
+# with a code point greater than 0x10ffff in UTF-32 library while UTF mode is
+# disabled), upstream bug #2052, in upstream after 10.23
 Patch2:     pcre2-10.23-Fix-32-bit-non-UTF-property-test-crash.patch
 # Fix an internal error for a forward reference in a lookbehind with
 # PCRE2_ANCHORED, # oss-fuzz bug #865, in upstream after 10.23
@@ -234,9 +234,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 
 * Mon Feb 27 2017 Petr Pisar <ppisar@redhat.com> - 10.23-2
 - Handle memmory allocation failures in pcre2test tool
-- Fix a crash when finding a Unicode property for a character with a code
-  point greater than 0x10ffff in UTF-32 library while UTF mode is disabled
-  (upstream bug #2052)
+- Fix CVE-2017-7186 (a crash when finding a Unicode property for a character
+  with a code point greater than 0x10ffff in UTF-32 library while UTF mode is
+  disabled) (upstream bug #2052)
 
 * Tue Feb 14 2017 Petr Pisar <ppisar@redhat.com> - 10.23-1
 - 10.23 bump
