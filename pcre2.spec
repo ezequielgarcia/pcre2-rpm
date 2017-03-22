@@ -51,6 +51,9 @@ Patch4:     pcre2-10.23-Fix-pcre2test-bug-for-global-match-with-zero-termina.pat
 # Close serialization file in pcre2test after any error, upstream bug #2074,
 # in upstream after 10.23
 Patch5:     pcre2-10.23-Close-serialization-file-in-pcre2test-after-any-erro.patch
+# Fix a memory leak in pcre2_serialize_decode() when the input is invalid,
+# upstream bug #2075, in upsream after 10.23.
+Patch6:     pcre2-10.23-Fix-memory-leak-when-deserializing-invalid-data-Bugz.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -132,6 +135,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -232,6 +236,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Wed Mar 22 2017 Petr Pisar <ppisar@redhat.com> - 10.23-4
 - Close serialization file in pcre2test after any error (upstream bug #2074)
+- Fix a memory leak in pcre2_serialize_decode() when the input is invalid
+  (upstream bug #2075)
 
 * Mon Mar 20 2017 Petr Pisar <ppisar@redhat.com> - 10.23-3
 - Fix an internal error for a forward reference in a lookbehind with
