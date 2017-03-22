@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.23
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -48,6 +48,9 @@ Patch3:     pcre2-10.23-Fix-crash-for-forward-reference-in-lookbehind-with-P.pat
 # Fix a pcre2test bug for global match with zero terminated subject,
 # upstream bug #2063, in upstream after 10.23
 Patch4:     pcre2-10.23-Fix-pcre2test-bug-for-global-match-with-zero-termina.patch
+# Close serialization file in pcre2test after any error, upstream bug #2074,
+# in upstream after 10.23
+Patch5:     pcre2-10.23-Close-serialization-file-in-pcre2test-after-any-erro.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -128,6 +131,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -226,6 +230,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Mar 22 2017 Petr Pisar <ppisar@redhat.com> - 10.23-4
+- Close serialization file in pcre2test after any error (upstream bug #2074)
+
 * Mon Mar 20 2017 Petr Pisar <ppisar@redhat.com> - 10.23-3
 - Fix an internal error for a forward reference in a lookbehind with
   PCRE2_ANCHORED (oss-fuzz bug #865)
