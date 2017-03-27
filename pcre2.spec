@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.23
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -64,6 +64,9 @@ Patch8:     pcre2-10.23-Fix-32-bit-error-buffer-size-bug-in-pcre2test-Bugzil.pat
 # 2/2 Fix 32-bit error buffer size bug in pcre2test, upstream bug #2079,
 # in upstream after 10.23
 Patch9:     pcre2-10.23-Previous-patch-was-not-quite-complete.patch
+# Fix DFA match for a possessively repeated character class, upstream bug #2086,
+# in upstream after 10.23
+Patch10:    pcre2-10.23-Fix-misbehaving-DFA-match-for-possessively-repeated-.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -149,6 +152,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -247,6 +251,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Mar 27 2017 Petr Pisar <ppisar@redhat.com> - 10.23-5
+- Fix DFA match for a possessively repeated character class (upstream bug #2086)
+
 * Wed Mar 22 2017 Petr Pisar <ppisar@redhat.com> - 10.23-4
 - Close serialization file in pcre2test after any error (upstream bug #2074)
 - Fix a memory leak in pcre2_serialize_decode() when the input is invalid
