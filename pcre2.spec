@@ -67,6 +67,9 @@ Patch9:     pcre2-10.23-Previous-patch-was-not-quite-complete.patch
 # Fix DFA match for a possessively repeated character class, upstream bug #2086,
 # in upstream after 10.23
 Patch10:    pcre2-10.23-Fix-misbehaving-DFA-match-for-possessively-repeated-.patch
+# Use a memory allocator from the pattern if no context is supplied to
+# pcre2_match(), in upsream after 10.23
+Patch11:    pcre2-10.23-Fix-bug-introduced-at-10.21-use-memory-allocator-fro.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -153,6 +156,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -253,6 +257,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Mon Mar 27 2017 Petr Pisar <ppisar@redhat.com> - 10.23-5
 - Fix DFA match for a possessively repeated character class (upstream bug #2086)
+- Use a memory allocator from the pattern if no context is supplied to
+  pcre2_match()
 
 * Wed Mar 22 2017 Petr Pisar <ppisar@redhat.com> - 10.23-4
 - Close serialization file in pcre2test after any error (upstream bug #2074)
