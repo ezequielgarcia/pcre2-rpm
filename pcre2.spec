@@ -74,6 +74,9 @@ Patch11:    pcre2-10.23-Fix-bug-introduced-at-10.21-use-memory-allocator-fro.pat
 # a character with a code point greater than 0x10ffff in UTF-32 library while
 # UTF mode is disabled), upstream bug #2052, in upstream after 10.23
 Patch12:    pcre2-10.23-Fix-character-type-detection-when-32-bit-and-UCP-are.patch
+# Fix an incorrect cast in UTF validation, upstream bug #2090,
+# in upstream after 10.23
+Patch13:    pcre2-10.23-Correct-an-incorrect-cast.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -162,6 +165,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
+%patch13 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -264,6 +268,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Fix CVE-2017-7186 in JIT mode (a crash when finding a Unicode property for
   a character with a code point greater than 0x10ffff in UTF-32 library while
   UTF mode is disabled), upstream bug #2052, in upstream after 10.23
+- Fix an incorrect cast in UTF validation (upstream bug #2090)
 
 * Mon Mar 27 2017 Petr Pisar <ppisar@redhat.com> - 10.23-5
 - Fix DFA match for a possessively repeated character class (upstream bug #2086)
