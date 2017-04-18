@@ -72,7 +72,8 @@ Patch10:    pcre2-10.23-Fix-misbehaving-DFA-match-for-possessively-repeated-.pat
 Patch11:    pcre2-10.23-Fix-bug-introduced-at-10.21-use-memory-allocator-fro.patch
 # Fix CVE-2017-7186 in JIT mode (a crash when finding a Unicode property for
 # a character with a code point greater than 0x10ffff in UTF-32 library while
-# UTF mode is disabled), upstream bug #2052, in upstream after 10.23
+# UTF mode is disabled), bug #1434504, upstream bug #2052,
+# in upstream after 10.23
 Patch12:    pcre2-10.23-Fix-character-type-detection-when-32-bit-and-UCP-are.patch
 # Fix an incorrect cast in UTF validation, upstream bug #2090,
 # in upstream after 10.23
@@ -267,7 +268,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Tue Apr 18 2017 Petr Pisar <ppisar@redhat.com> - 10.23-6
 - Fix CVE-2017-7186 in JIT mode (a crash when finding a Unicode property for
   a character with a code point greater than 0x10ffff in UTF-32 library while
-  UTF mode is disabled), upstream bug #2052, in upstream after 10.23
+  UTF mode is disabled) (bug #1434504)
 - Fix an incorrect cast in UTF validation (upstream bug #2090)
 
 * Mon Mar 27 2017 Petr Pisar <ppisar@redhat.com> - 10.23-5
