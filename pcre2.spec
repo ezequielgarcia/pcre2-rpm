@@ -2,7 +2,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.23
-Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 Group:      System Environment/Libraries
@@ -78,6 +78,9 @@ Patch12:    pcre2-10.23-Fix-character-type-detection-when-32-bit-and-UCP-are.pat
 # Fix an incorrect cast in UTF validation, upstream bug #2090,
 # in upstream after 10.23
 Patch13:    pcre2-10.23-Correct-an-incorrect-cast.patch
+# Fix a pcre2test crash on multiple push statements, upstream bug #2109,
+# in upstream after 10.23
+Patch14:    pcre2-10.23-Fix-crash-when-more-than-one-kind-of-push-was-set-in.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -167,6 +170,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch11 -p1
 %patch12 -p1
 %patch13 -p1
+%patch14 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -265,6 +269,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue May 09 2017 Petr Pisar <ppisar@redhat.com> - 10.23-7
+- Fix a pcre2test crash on multiple push statements (upstream bug #2109)
+
 * Tue Apr 18 2017 Petr Pisar <ppisar@redhat.com> - 10.23-6
 - Fix CVE-2017-7186 in JIT mode (a crash when finding a Unicode property for
   a character with a code point greater than 0x10ffff in UTF-32 library while
