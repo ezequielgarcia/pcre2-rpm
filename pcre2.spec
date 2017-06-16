@@ -84,6 +84,9 @@ Patch14:    pcre2-10.23-Fix-crash-when-more-than-one-kind-of-push-was-set-in.pat
 # Fix DFA matching a lookbehind assertion that has a zero-length branch,
 # PCRE2 oss-fuzz issue 1859, in upstream after 10.23
 Patch15:    pcre2-10.23-Fix-lookbehind-with-zero-length-branch-in-DFA-matchi.patch
+# Fix returned offsets from regexec() when REG_STARTEND is used with starting offset
+# greater than zero, upstream bug #2128, in upstream after 10.23
+Patch16:    pcre2-10.23-Fix-matching-offsets-from-regexec-in-the-POSIX-wrapp.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -175,6 +178,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch13 -p1
 %patch14 -p1
 %patch15 -p1
+%patch16 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -276,6 +280,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Fri Jun 16 2017 Petr Pisar <ppisar@redhat.com> - 10.23-8
 - Fix DFA matching a lookbehind assertion that has a zero-length branch
   (PCRE2 oss-fuzz issue 1859)
+- Fix returned offsets from regexec() when REG_STARTEND is used with starting offset
+  greater than zero (upstream bug #2128)
 
 * Tue May 09 2017 Petr Pisar <ppisar@redhat.com> - 10.23-7
 - Fix a pcre2test crash on multiple push statements (upstream bug #2109)
