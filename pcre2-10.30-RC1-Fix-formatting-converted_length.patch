@@ -1,0 +1,31 @@
+From 0c0a69a8312a3fd9e20465940634a4caa6d84c07 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Petr=20P=C3=ADsa=C5=99?= <ppisar@redhat.com>
+Date: Thu, 20 Jul 2017 13:14:19 +0200
+Subject: [PATCH] Fix formatting converted_length
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+size_t width varies among platforms.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2test.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pcre2test.c b/src/pcre2test.c
+index 5d1cbdc..3775772 100644
+--- a/src/pcre2test.c
++++ b/src/pcre2test.c
+@@ -5466,7 +5466,7 @@ if (pat_patctl.convert_type != CONVERT_UNSET)
+ 
+   if (rc != 0)
+     {
+-    fprintf(outfile, "** Pattern conversion error at offset %lu: ",
++    fprintf(outfile, "** Pattern conversion error at offset %zu: ",
+       converted_length);
+     convert_return = print_error_message(rc, "", "\n")? PR_SKIP:PR_ABEND;
+     }
+-- 
+2.9.4
+

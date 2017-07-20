@@ -1,16 +1,18 @@
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.23
-Release:    %{?rcversion:0.}8%{?rcversion:.%rcversion}%{?dist}
+Version:    10.30
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
-Group:      System Environment/Libraries
-# the library:                          BSD
+# the library:                          BSD with exceptions
 # pcre2test (linked to GNU readline):   BSD (linked to GPLv3+)
 # COPYING:                              see LICENCE file
-# LICENSE:                              BSD text and declares Public Domain
+# LICENSE:                              BSD text with exceptions and
+#                                       Public Domain declaration
 #                                       for testdata
+#Bundled
+# src/sljit:                            BSD
 #Not distributed in binary package
 # aclocal.m4:                           FSFULLR and GPLv2+ with exception
 # ar-lib:                               GPLv2+ with exception
@@ -36,57 +38,15 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Handle memmory allocation failures in pcre2test tool, in upstream after 10.23
-Patch1:     pcre2-10.23-Check-malloc-returns-in-pcre2test.patch
-# Fix CVE-2017-7186 (a crash when finding a Unicode property for a character
-# with a code point greater than 0x10ffff in UTF-32 library while UTF mode is
-# disabled), upstream bug #2052, in upstream after 10.23
-Patch2:     pcre2-10.23-Fix-32-bit-non-UTF-property-test-crash.patch
-# Fix an internal error for a forward reference in a lookbehind with
-# PCRE2_ANCHORED, # oss-fuzz bug #865, in upstream after 10.23
-Patch3:     pcre2-10.23-Fix-crash-for-forward-reference-in-lookbehind-with-P.patch
-# Fix a pcre2test bug for global match with zero terminated subject,
-# upstream bug #2063, in upstream after 10.23
-Patch4:     pcre2-10.23-Fix-pcre2test-bug-for-global-match-with-zero-termina.patch
-# Close serialization file in pcre2test after any error, upstream bug #2074,
-# in upstream after 10.23
-Patch5:     pcre2-10.23-Close-serialization-file-in-pcre2test-after-any-erro.patch
-# Fix a memory leak in pcre2_serialize_decode() when the input is invalid,
-# upstream bug #2075, in upsream after 10.23.
-Patch6:     pcre2-10.23-Fix-memory-leak-when-deserializing-invalid-data-Bugz.patch
-# Fix a potential NULL dereference in pcre2_callout_enumerate() if called with
-# a NULL pattern pointer when Unicode support is available, upstream bug #2076,
-# in upstream after 10.23
-Patch7:     pcre2-10.23-Fix-NULL-deference-if-pcre2_callout_enumerate-is-cal.patch
-# 1/2 Fix 32-bit error buffer size bug in pcre2test, upstream bug #2079,
-# in upstream after 10.23
-Patch8:     pcre2-10.23-Fix-32-bit-error-buffer-size-bug-in-pcre2test-Bugzil.patch
-# 2/2 Fix 32-bit error buffer size bug in pcre2test, upstream bug #2079,
-# in upstream after 10.23
-Patch9:     pcre2-10.23-Previous-patch-was-not-quite-complete.patch
-# Fix DFA match for a possessively repeated character class, upstream bug #2086,
-# in upstream after 10.23
-Patch10:    pcre2-10.23-Fix-misbehaving-DFA-match-for-possessively-repeated-.patch
-# Use a memory allocator from the pattern if no context is supplied to
-# pcre2_match(), in upsream after 10.23
-Patch11:    pcre2-10.23-Fix-bug-introduced-at-10.21-use-memory-allocator-fro.patch
-# Fix CVE-2017-7186 in JIT mode (a crash when finding a Unicode property for
-# a character with a code point greater than 0x10ffff in UTF-32 library while
-# UTF mode is disabled), bug #1434504, upstream bug #2052,
-# in upstream after 10.23
-Patch12:    pcre2-10.23-Fix-character-type-detection-when-32-bit-and-UCP-are.patch
-# Fix an incorrect cast in UTF validation, upstream bug #2090,
-# in upstream after 10.23
-Patch13:    pcre2-10.23-Correct-an-incorrect-cast.patch
-# Fix a pcre2test crash on multiple push statements, upstream bug #2109,
-# in upstream after 10.23
-Patch14:    pcre2-10.23-Fix-crash-when-more-than-one-kind-of-push-was-set-in.patch
-# Fix DFA matching a lookbehind assertion that has a zero-length branch,
-# PCRE2 oss-fuzz issue 1859, in upstream after 10.23
-Patch15:    pcre2-10.23-Fix-lookbehind-with-zero-length-branch-in-DFA-matchi.patch
-# Fix returned offsets from regexec() when REG_STARTEND is used with starting offset
-# greater than zero, upstream bug #2128, in upstream after 10.23
-Patch16:    pcre2-10.23-Fix-matching-offsets-from-regexec-in-the-POSIX-wrapp.patch
+# Add forgotten sources for SELinux JIT allocator, in upstream after 10.23-RC1,
+# <https://lists.exim.org/lurker/message/20170720.103409.cb67b89d.en.html>
+Patch1:     pcre2-10.30-RC1-Distribute-forgotten-sljitProtExecAllocator.c.patch
+# Preserve pcre2-10.23 ABI, in upstream after 10.23-RC1
+# <https://lists.exim.org/lurker/message/20170720.111013.7f8f78d3.en.html>
+Patch2:     pcre2-10.30-RC1-Put-back-pcre2_set_recursion_limit-as-a-real-functio.patch
+# Correct formatting a size_t variable, in upstream after 10.23-RC1,
+# <https://lists.exim.org/lurker/message/20170720.112359.fa1910da.en.html>
+Patch3:     pcre2-10.30-RC1-Fix-formatting-converted_length.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -94,6 +54,7 @@ BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  make
 BuildRequires:  readline-devel
+Provides:       bundled(sljit)
 
 %description
 PCRE2 is a re-working of the original PCRE (Perl-compatible regular
@@ -115,7 +76,7 @@ restricted, and does not give full access to all of PCRE2's facilities.
 
 %package utf16
 Summary:    UTF-16 variant of PCRE2
-Group:      Development/Libraries
+Provides:   bundled(sljit)
 Conflicts:  %{name}%{?_isa} < 10.21-4
 
 %description utf16
@@ -123,7 +84,7 @@ This is PCRE2 library working on UTF-16 strings.
 
 %package utf32
 Summary:    UTF-32 variant of PCRE2
-Group:      Development/Libraries
+Provides:   bundled(sljit)
 Conflicts:  %{name}%{?_isa} < 10.21-4
 
 %description utf32
@@ -131,7 +92,6 @@ This is PCRE2 library working on UTF-32 strings.
 
 %package devel
 Summary:    Development files for %{name}
-Group:      Development/Libraries
 Requires:   %{name}%{?_isa} = %{version}-%{release}
 Requires:   %{name}-utf16%{?_isa} = %{version}-%{release}
 Requires:   %{name}-utf32%{?_isa} = %{version}-%{release}
@@ -144,8 +104,8 @@ pcre2posix.h.
 
 %package static
 Summary:    Static library for %{name}
-Group:      Development/Libraries
 Requires:   %{name}-devel%{_isa} = %{version}-%{release}
+Provides:   bundled(sljit)
 
 %description static
 Library for static linking for %{name}.
@@ -154,7 +114,6 @@ Library for static linking for %{name}.
 Summary:    Auxiliary utilities for %{name}
 # pcre2test (linked to GNU readline):   BSD (linked to GPLv3+)
 License:    BSD and GPLv3+
-Group:      Development/Tools
 Requires:   %{name}%{_isa} = %{version}-%{release}
 
 %description tools
@@ -166,19 +125,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -200,6 +146,7 @@ autoreconf -vif
     --disable-coverage \
     --disable-ebcdic \
     --disable-fuzz-support \
+    --enable-jit-sealloc \
     --disable-never-backslash-C \
     --enable-newline-is-lf \
     --enable-pcre2-8 \
@@ -213,7 +160,7 @@ autoreconf -vif
     --enable-pcre2test-libreadline \
     --disable-rebuild-chartables \
     --enable-shared \
-    --enable-stack-for-recursion \
+    --disable-silent-rules \
     --enable-static \
     --enable-unicode \
     --disable-valgrind
@@ -277,6 +224,11 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jul 20 2017 Petr Pisar <ppisar@redhat.com> - 10.30-0.1.RC1
+- 10.30-RC1 bump
+- Heap-based matching implementation replaced stack-based one
+- SELinux-friendly JIT enabled
+
 * Fri Jun 16 2017 Petr Pisar <ppisar@redhat.com> - 10.23-8
 - Fix DFA matching a lookbehind assertion that has a zero-length branch
   (PCRE2 oss-fuzz issue 1859)
