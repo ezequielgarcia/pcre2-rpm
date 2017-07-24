@@ -38,13 +38,13 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Add forgotten sources for SELinux JIT allocator, in upstream after 10.23-RC1,
+# Add forgotten sources for SELinux JIT allocator, in upstream after 10.30-RC1,
 # <https://lists.exim.org/lurker/message/20170720.103409.cb67b89d.en.html>
 Patch1:     pcre2-10.30-RC1-Distribute-forgotten-sljitProtExecAllocator.c.patch
-# Preserve pcre2-10.23 ABI, in upstream after 10.23-RC1
+# Preserve pcre2-10.23 ABI, in upstream after 10.30-RC1
 # <https://lists.exim.org/lurker/message/20170720.111013.7f8f78d3.en.html>
 Patch2:     pcre2-10.30-RC1-Put-back-pcre2_set_recursion_limit-as-a-real-functio.patch
-# Correct formatting a size_t variable, in upstream after 10.23-RC1,
+# Correct formatting a size_t variable, in upstream after 10.30-RC1,
 # <https://lists.exim.org/lurker/message/20170720.112359.fa1910da.en.html>
 Patch3:     pcre2-10.30-RC1-Fix-formatting-converted_length.patch
 # Fix a compiler warning in JIT code for ppc32, in upstream after 10.30-RC1
