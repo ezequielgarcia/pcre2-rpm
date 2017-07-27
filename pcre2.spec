@@ -2,7 +2,7 @@
 %global rcversion RC1
 Name:       pcre2
 Version:    10.30
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}.1
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -49,6 +49,9 @@ Patch2:     pcre2-10.30-RC1-Put-back-pcre2_set_recursion_limit-as-a-real-functio
 Patch3:     pcre2-10.30-RC1-Fix-formatting-converted_length.patch
 # Fix a compiler warning in JIT code for ppc32, in upstream after 10.30-RC1
 Patch4:     pcre2-10.30-RC1-JIT-compiler-update.patch
+# Fix applying local x modifier while global xx was in effect,
+# in upstream after 10.30-RC1
+Patch5:     pcre2-10.30-RC1-Fix-bug-in-xx-implementation.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -128,6 +131,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -227,6 +231,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jul 27 2017 Petr Pisar <ppisar@redhat.com> - 10.30-0.3.RC1
+- Fix applying local x modifier while global xx was in effect
+
 * Thu Jul 27 2017 Fedora Release Engineering <releng@fedoraproject.org> - 10.30-0.2.RC1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
 
