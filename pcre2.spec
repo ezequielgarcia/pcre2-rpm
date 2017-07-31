@@ -2,7 +2,7 @@
 %global rcversion RC1
 Name:       pcre2
 Version:    10.30
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -52,6 +52,9 @@ Patch4:     pcre2-10.30-RC1-JIT-compiler-update.patch
 # Fix applying local x modifier while global xx was in effect,
 # in upstream after 10.30-RC1
 Patch5:     pcre2-10.30-RC1-Fix-bug-in-xx-implementation.patch
+# Fix handling a hyphen at the end of a character class, upstream bug #2153,
+# in upstream after 10.30-RC1
+Patch6:     pcre2-10.30-RC1-Hyphen-at-the-end-of-a-character-class-is-always-lit.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -132,6 +135,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -231,6 +235,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jul 31 2017 Petr Pisar <ppisar@redhat.com> - 10.30-0.5.RC1
+- Fix handling a hyphen at the end of a character class (upstream bug #2153)
+
 * Sat Jul 29 2017 Florian Weimer <fweimer@redhat.com> - 10.30-0.4.RC1
 - Rebuild with binutils fix for ppc64le (#1475636)
 
