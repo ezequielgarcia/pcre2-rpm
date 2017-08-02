@@ -1,8 +1,12 @@
+# Disable SELinux-frindly JIT allocator because it seems not to be fork-safe,
+# https://bugs.exim.org/show_bug.cgi?id=1749#c45
+%{bcond_with pcre2_enables_sealloc}
+
 # This is stable release:
 %global rcversion RC1
 Name:       pcre2
 Version:    10.30
-Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -157,7 +161,11 @@ autoreconf -vif
     --disable-coverage \
     --disable-ebcdic \
     --disable-fuzz-support \
+%if %{with pcre2_enables_sealloc}
     --enable-jit-sealloc \
+%else
+    --disable-jit-sealloc \
+%endif
     --disable-never-backslash-C \
     --enable-newline-is-lf \
     --enable-pcre2-8 \
@@ -235,6 +243,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Aug 02 2017 Petr Pisar <ppisar@redhat.com> - 10.30-0.6.RC1
+- Disable SELinux-friendly JIT allocator because it crashes after a fork
+  (upstream bug #1749)
+
 * Mon Jul 31 2017 Petr Pisar <ppisar@redhat.com> - 10.30-0.5.RC1
 - Fix handling a hyphen at the end of a character class (upstream bug #2153)
 
