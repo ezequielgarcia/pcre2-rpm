@@ -3,10 +3,10 @@
 %{bcond_with pcre2_enables_sealloc}
 
 # This is stable release:
-%global rcversion RC1
+#%%global rcversion RC1
 Name:       pcre2
 Version:    10.30
-Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -42,23 +42,6 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Add forgotten sources for SELinux JIT allocator, in upstream after 10.30-RC1,
-# <https://lists.exim.org/lurker/message/20170720.103409.cb67b89d.en.html>
-Patch1:     pcre2-10.30-RC1-Distribute-forgotten-sljitProtExecAllocator.c.patch
-# Preserve pcre2-10.23 ABI, in upstream after 10.30-RC1
-# <https://lists.exim.org/lurker/message/20170720.111013.7f8f78d3.en.html>
-Patch2:     pcre2-10.30-RC1-Put-back-pcre2_set_recursion_limit-as-a-real-functio.patch
-# Correct formatting a size_t variable, in upstream after 10.30-RC1,
-# <https://lists.exim.org/lurker/message/20170720.112359.fa1910da.en.html>
-Patch3:     pcre2-10.30-RC1-Fix-formatting-converted_length.patch
-# Fix a compiler warning in JIT code for ppc32, in upstream after 10.30-RC1
-Patch4:     pcre2-10.30-RC1-JIT-compiler-update.patch
-# Fix applying local x modifier while global xx was in effect,
-# in upstream after 10.30-RC1
-Patch5:     pcre2-10.30-RC1-Fix-bug-in-xx-implementation.patch
-# Fix handling a hyphen at the end of a character class, upstream bug #2153,
-# in upstream after 10.30-RC1
-Patch6:     pcre2-10.30-RC1-Hyphen-at-the-end-of-a-character-class-is-always-lit.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -107,7 +90,6 @@ Summary:    Development files for %{name}
 Requires:   %{name}%{?_isa} = %{version}-%{release}
 Requires:   %{name}-utf16%{?_isa} = %{version}-%{release}
 Requires:   %{name}-utf32%{?_isa} = %{version}-%{release}
-Requires:   gcc
 
 %description devel
 Development files (headers, libraries for dynamic linking, documentation)
@@ -134,12 +116,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -243,6 +219,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Aug 15 2017 Petr Pisar <ppisar@redhat.com> - 10.30-1
+- 10.30 bump
+
 * Wed Aug 02 2017 Petr Pisar <ppisar@redhat.com> - 10.30-0.6.RC1
 - Disable SELinux-friendly JIT allocator because it crashes after a fork
   (upstream bug #1749)
