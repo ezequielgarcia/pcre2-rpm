@@ -272,7 +272,7 @@ make %{?_smp_mflags} check VERBOSE=yes
   (upstream bug #2075)
 - Fix a potential NULL dereference in pcre2_callout_enumerate() if called with
   a NULL pattern pointer when Unicode support is available (upstream bug #2076)
-- Fix 32-bit error buffer size bug in pcre2test (upstream bug #2079)
+- Fix CVE-2017-8786 (32-bit error buffer size bug in pcre2test) (bug #1500717)
 
 * Mon Mar 20 2017 Petr Pisar <ppisar@redhat.com> - 10.23-3
 - Fix an internal error for a forward reference in a lookbehind with
