@@ -1,0 +1,32 @@
+From 12dd78fc2ff2d941e724c7af72fa22daa8528041 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sun, 22 Oct 2017 16:17:44 +0000
+Subject: [PATCH 2/2] Fix memory leak issue introduced in last bug fix in
+ pcre2grep.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@874 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2grep.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/pcre2grep.c b/src/pcre2grep.c
+index d7410b4..d75917c 100644
+--- a/src/pcre2grep.c
++++ b/src/pcre2grep.c
+@@ -3051,7 +3051,8 @@ if (isdirectory(pathname))
+       if (fnlength > FNBUFSIZ)
+         {
+         fprintf(stderr, "pcre2grep: recursive filename is too long\n");
+-        return 2;
++        rc = 2;
++        break;
+         }
+       sprintf(buffer, "%s%c%s", pathname, FILESEP, nextfile);
+       frc = grep_or_recurse(buffer, dir_recurse, FALSE);
+-- 
+2.13.6
+

@@ -6,7 +6,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.30
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -42,6 +42,12 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# 1/2 Accept files names longer than 128 bytes in recursive mode of pcre2grep,
+# upstream bug #2177, in upstream after 10.30
+Patch1:     pcre2-10.30-Fix-pcre2grep-recursive-file-name-length-issue.patch
+# 2/2 Accept files names longer than 128 bytes in recursive mode of pcre2grep,
+# upstream bug #2177, in upstream after 10.30
+Patch2:     pcre2-10.30-Fix-memory-leak-issue-introduced-in-last-bug-fix-in-.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -116,6 +122,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -219,6 +227,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Nov 02 2017 Petr Pisar <ppisar@redhat.com> - 10.30-2
+- Accept files names longer than 128 bytes in recursive mode of pcre2grep
+  (upstream bug #2177)
+
 * Tue Aug 15 2017 Petr Pisar <ppisar@redhat.com> - 10.30-1
 - 10.30 bump
 
