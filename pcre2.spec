@@ -6,7 +6,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.30
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -53,6 +53,9 @@ Patch3:     pcre2-10.30-Remove-superflous-variable.patch
 # Fix multi-line matching in pcre2grep tool, upstream bug #2187,
 # in upstream after 10.30
 Patch4:     pcre2-10.30-Fix-multiple-multiline-matching-issues-in-pcre2grep.patch
+# Fix pcre2_jit_match() to properly check the pattern was JIT-compiled,
+# in upstream after 10.30
+Patch5:     pcre2-10.30-Fix-pcre2_jit_match-early-check.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -131,6 +134,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -234,6 +238,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Dec 22 2017 Petr Pisar <ppisar@redhat.com> - 10.30-4
+- Fix pcre2_jit_match() to properly check the pattern was JIT-compiled
+
 * Mon Nov 13 2017 Petr Pisar <ppisar@redhat.com> - 10.30-3
 - Fix multi-line matching in pcre2grep tool (upstream bug #2187)
 

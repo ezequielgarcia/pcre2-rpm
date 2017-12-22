@@ -1,0 +1,28 @@
+From 67aa24cc00470222301cb5fe3c53bc319105d092 Mon Sep 17 00:00:00 2001
+From: zherczeg <zherczeg@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 23 Nov 2017 07:54:39 +0000
+Subject: [PATCH] Fix pcre2_jit_match early check.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@884 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 10.30.
+
+diff --git a/src/pcre2_jit_match.c b/src/pcre2_jit_match.c
+index 4cad754..2f840ab 100644
+--- a/src/pcre2_jit_match.c
++++ b/src/pcre2_jit_match.c
+@@ -118,7 +118,7 @@ if ((options & PCRE2_PARTIAL_HARD) != 0)
+ else if ((options & PCRE2_PARTIAL_SOFT) != 0)
+   index = 1;
+ 
+-if (functions->executable_funcs[index] == NULL)
++if (functions->executable_funcs == NULL || functions->executable_funcs[index] == NULL)
+   return PCRE2_ERROR_JIT_BADOPTION;
+ 
+ /* Sanity checks should be handled by pcre_exec. */
+-- 
+2.13.6
+
