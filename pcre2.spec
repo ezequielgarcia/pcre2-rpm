@@ -59,6 +59,9 @@ Patch5:     pcre2-10.30-Fix-pcre2_jit_match-early-check.patch
 # Allow pcre2grep match counter to handle values larger than 2147483647,
 # upstream bug #2208, in upstream after 10.30
 Patch6:     pcre2-10.30-Change-pcre2grep-line-number-and-count-variables-to-.patch
+# Fix incorrect first matching character when a backreference with zero minimum
+# repeat starts a pattern, upstream bug #2209, in upstream after 10.30
+Patch7:     pcre2-10.30-Fix-incorrect-first-matching-character-when-a-backre.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -139,6 +142,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -246,6 +250,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Fix pcre2_jit_match() to properly check the pattern was JIT-compiled
 - Allow pcre2grep match counter to handle values larger than 2147483647,
   (upstream bug #2208)
+- Fix incorrect first matching character when a backreference with zero minimum
+  repeat starts a pattern (upstream bug #2209)
 
 * Mon Nov 13 2017 Petr Pisar <ppisar@redhat.com> - 10.30-3
 - Fix multi-line matching in pcre2grep tool (upstream bug #2187)
