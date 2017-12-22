@@ -56,6 +56,9 @@ Patch4:     pcre2-10.30-Fix-multiple-multiline-matching-issues-in-pcre2grep.patc
 # Fix pcre2_jit_match() to properly check the pattern was JIT-compiled,
 # in upstream after 10.30
 Patch5:     pcre2-10.30-Fix-pcre2_jit_match-early-check.patch
+# Allow pcre2grep match counter to handle values larger than 2147483647,
+# upstream bug #2208, in upstream after 10.30
+Patch6:     pcre2-10.30-Change-pcre2grep-line-number-and-count-variables-to-.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -135,6 +138,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -240,6 +244,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Fri Dec 22 2017 Petr Pisar <ppisar@redhat.com> - 10.30-4
 - Fix pcre2_jit_match() to properly check the pattern was JIT-compiled
+- Allow pcre2grep match counter to handle values larger than 2147483647,
+  (upstream bug #2208)
 
 * Mon Nov 13 2017 Petr Pisar <ppisar@redhat.com> - 10.30-3
 - Fix multi-line matching in pcre2grep tool (upstream bug #2187)
