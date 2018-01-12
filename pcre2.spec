@@ -6,7 +6,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.30
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -62,6 +62,15 @@ Patch6:     pcre2-10.30-Change-pcre2grep-line-number-and-count-variables-to-.pat
 # Fix incorrect first matching character when a backreference with zero minimum
 # repeat starts a pattern, upstream bug #2209, in upstream after 10.30
 Patch7:     pcre2-10.30-Fix-incorrect-first-matching-character-when-a-backre.patch
+# 1/2 Fix handling \K in an assertion in documentation, upstream bug #2211,
+# in upstream after 10.30
+Patch8:     pcre2-10.30-Update-pcre2demo-to-deal-with-various-K-inside-asser.patch
+# 2/2 Fix handling \K in an assertion in documentation, upstream bug #2211,
+# upstream bug #2211, in upstream after 10.30
+Patch9:     pcre2-10.30-Documentation-update.patch
+# Fix handling \K in an assertion in pcre2grep tool, upstream bug #2211,
+# in upstream after 10.30
+Patch10:    pcre2-10.30-Fix-K-issues-in-pcre2grep.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -143,6 +152,9 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -246,6 +258,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Jan 12 2018 Petr Pisar <ppisar@redhat.com> - 10.30-5
+- Fix handling \K in an assertion in pcre2grep tool and documentation
+  (upstream bug #2211)
+
 * Fri Dec 22 2017 Petr Pisar <ppisar@redhat.com> - 10.30-4
 - Fix pcre2_jit_match() to properly check the pattern was JIT-compiled
 - Allow pcre2grep match counter to handle values larger than 2147483647,
