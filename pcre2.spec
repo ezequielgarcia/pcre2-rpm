@@ -71,6 +71,15 @@ Patch9:     pcre2-10.30-Documentation-update.patch
 # Fix handling \K in an assertion in pcre2grep tool, upstream bug #2211,
 # in upstream after 10.30
 Patch10:    pcre2-10.30-Fix-K-issues-in-pcre2grep.patch
+# 1/3 Fix matching at a first code unit of a new line sequence if
+# PCRE2_FIRSTLINE is enabled, in upstream after 10.30
+Patch11:    pcre2-10.30-FIRSTLINE_documentation-update.patch
+# 2/3 Fix matching at a first code unit of a new line sequence if
+# PCRE2_FIRSTLINE is enabled, in upstream after 10.30
+Patch12:    pcre2-10.30-Fix-PCRE2_FIRSTLINE-bug-when-a-pattern-match-starts-.patch
+# 3/3 Fix matching at a first code unit of a new line sequence if
+# PCRE2_FIRSTLINE is enabled, in upstream after 10.30
+Patch13:    pcre2-10.30-Previous-FIRSTLINE-patch-was-broken.-Fix-it.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -155,6 +164,9 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -261,6 +273,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Fri Jan 12 2018 Petr Pisar <ppisar@redhat.com> - 10.30-5
 - Fix handling \K in an assertion in pcre2grep tool and documentation
   (upstream bug #2211)
+- Fix matching at a first code unit of a new line sequence if PCRE2_FIRSTLINE
+  is enabled
 
 * Fri Dec 22 2017 Petr Pisar <ppisar@redhat.com> - 10.30-4
 - Fix pcre2_jit_match() to properly check the pattern was JIT-compiled

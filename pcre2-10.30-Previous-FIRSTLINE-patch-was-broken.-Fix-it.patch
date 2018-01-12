@@ -1,0 +1,218 @@
+From 1b5d77c6edc5ee8e8fe5c96bf9cad5798d6ce36c Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 1 Jan 2018 14:54:06 +0000
+Subject: [PATCH 3/3] Previous FIRSTLINE patch was broken. Fix it.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@900 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2_dfa_match.c | 27 +++++++++++----------------
+ src/pcre2_match.c     | 37 +++++++++++++++----------------------
+ testdata/testinput2   |  4 ++++
+ testdata/testinput6   |  4 ++++
+ testdata/testoutput2  |  5 +++++
+ testdata/testoutput6  |  5 +++++
+ 6 files changed, 44 insertions(+), 38 deletions(-)
+
+diff --git a/src/pcre2_dfa_match.c b/src/pcre2_dfa_match.c
+index 9c1d805..65243bf 100644
+--- a/src/pcre2_dfa_match.c
++++ b/src/pcre2_dfa_match.c
+@@ -3363,8 +3363,6 @@ for (;;)
+   if ((re->overall_options & PCRE2_NO_START_OPTIMIZE) == 0 &&
+       (options & PCRE2_DFA_RESTART) == 0)
+     {
+-    PCRE2_SPTR save_end_subject = end_subject;
+-
+     /* If firstline is TRUE, the start of the match is constrained to the first
+     line of a multiline string. That is, the match must be before or at the
+     first newline following the start of matching. Temporarily adjust
+@@ -3388,13 +3386,6 @@ for (;;)
+       else
+ #endif
+       while (t < end_subject && !IS_NEWLINE(t)) t++;
+-
+-      /* Note that we only need to advance by one code unit if we found a
+-      newline. If the newline is CRLF, a first code unit of LF should not
+-      match, because it is not at or before the newline. Similarly, only the
+-      first code unit of a Unicode newline might be relevant. */
+-
+-      if (t < end_subject) t++;
+       end_subject = t;
+       }
+ 
+@@ -3466,14 +3457,18 @@ for (;;)
+ #endif
+           }
+ 
+-        /* If we can't find the required code unit, break the bumpalong loop,
+-        to force a match failure, except when doing partial matching, when we
+-        let the next cycle run at the end of the subject. To see why, consider
+-        the pattern /(?<=abc)def/, which partially matches "abc", even though
+-        the string does not contain the starting character "d". */
++        /* If we can't find the required code unit, having reached the true end
++        of the subject, break the bumpalong loop, to force a match failure,
++        except when doing partial matching, when we let the next cycle run at
++        the end of the subject. To see why, consider the pattern /(?<=abc)def/,
++        which partially matches "abc", even though the string does not contain
++        the starting character "d". If we have not reached the true end of the
++        subject (PCRE2_FIRSTLINE caused end_subject to be temporarily modified)
++        we also let the cycle run, because the matching string is legitimately
++        allowed to start with the first code unit of a newline. */
+ 
+         if ((mb->moptions & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) == 0 &&
+-            start_match >= end_subject)
++            start_match >= mb->end_subject)
+           break;
+         }
+ 
+@@ -3532,7 +3527,7 @@ for (;;)
+ 
+     /* Restore fudged end_subject */
+ 
+-    end_subject = save_end_subject;
++    end_subject = mb->end_subject;
+ 
+     /* The following two optimizations are disabled for partial matching. */
+ 
+diff --git a/src/pcre2_match.c b/src/pcre2_match.c
+index 8872345..c6b6975 100644
+--- a/src/pcre2_match.c
++++ b/src/pcre2_match.c
+@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
+ 
+                        Written by Philip Hazel
+      Original API code Copyright (c) 1997-2012 University of Cambridge
+-          New API code Copyright (c) 2015-2017 University of Cambridge
++          New API code Copyright (c) 2015-2018 University of Cambridge
+ 
+ -----------------------------------------------------------------------------
+ Redistribution and use in source and binary forms, with or without
+@@ -6363,15 +6363,11 @@ for(;;)
+ 
+   if ((re->overall_options & PCRE2_NO_START_OPTIMIZE) == 0)
+     {
+-    PCRE2_SPTR save_end_subject = end_subject;
+-
+     /* If firstline is TRUE, the start of the match is constrained to the first
+     line of a multiline string. That is, the match must be before or at the
+     first newline following the start of matching. Temporarily adjust
+-    end_subject so that we stop the optimization scans for a first code unit
+-    immediately after the first character of a newline (the first code unit can
+-    legitimately be a newline). If the match fails at the newline, later code
+-    breaks this loop. */
++    end_subject so that we stop the scans for a first code unit at a newline.
++    If the match fails at the newline, later code breaks the loop. */
+ 
+     if (firstline)
+       {
+@@ -6388,13 +6384,6 @@ for(;;)
+       else
+ #endif
+       while (t < end_subject && !IS_NEWLINE(t)) t++;
+-
+-      /* Note that we only need to advance by one code unit if we found a
+-      newline. If the newline is CRLF, a first code unit of LF should not
+-      match, because it is not at or before the newline. Similarly, only the
+-      first code unit of a Unicode newline might be relevant. */
+-
+-      if (t < end_subject) t++;
+       end_subject = t;
+       }
+ 
+@@ -6470,13 +6459,17 @@ for(;;)
+ #endif
+           }
+ 
+-        /* If we can't find the required code unit, break the bumpalong loop,
+-        to force a match failure, except when doing partial matching, when we
+-        let the next cycle run at the end of the subject. To see why, consider
+-        the pattern /(?<=abc)def/, which partially matches "abc", even though
+-        the string does not contain the starting character "d". */
+-
+-        if (!mb->partial && start_match >= end_subject)
++        /* If we can't find the required code unit, having reached the true end
++        of the subject, break the bumpalong loop, to force a match failure,
++        except when doing partial matching, when we let the next cycle run at
++        the end of the subject. To see why, consider the pattern /(?<=abc)def/,
++        which partially matches "abc", even though the string does not contain
++        the starting character "d". If we have not reached the true end of the
++        subject (PCRE2_FIRSTLINE caused end_subject to be temporarily modified)
++        we also let the cycle run, because the matching string is legitimately
++        allowed to start with the first code unit of a newline. */
++
++        if (!mb->partial && start_match >= mb->end_subject)
+           {
+           rc = MATCH_NOMATCH;
+           break;
+@@ -6538,7 +6531,7 @@ for(;;)
+ 
+     /* Restore fudged end_subject */
+ 
+-    end_subject = save_end_subject;
++    end_subject = mb->end_subject;
+ 
+     /* The following two optimizations must be disabled for partial matching. */
+ 
+diff --git a/testdata/testinput2 b/testdata/testinput2
+index fe8efbf..36e4454 100644
+--- a/testdata/testinput2
++++ b/testdata/testinput2
+@@ -5405,4 +5405,8 @@ a)"xI
+ \= Expect no match
+     xyz\r\nabc
+ 
++/[abc]/firstline
++\= Expect no match
++    \na
++    
+ # End of testinput2
+diff --git a/testdata/testinput6 b/testdata/testinput6
+index 614c3a0..e2f00c0 100644
+--- a/testdata/testinput6
++++ b/testdata/testinput6
+@@ -4942,4 +4942,8 @@
+ \= Expect no match
+     xyz\r\nabc
+ 
++/[abc]/firstline
++\= Expect no match
++    \na
++    
+ # End of testinput6
+diff --git a/testdata/testoutput2 b/testdata/testoutput2
+index 62ec12f..f146c0c 100644
+--- a/testdata/testoutput2
++++ b/testdata/testoutput2
+@@ -16453,6 +16453,11 @@ No match
+     xyz\r\nabc
+ No match
+ 
++/[abc]/firstline
++\= Expect no match
++    \na
++No match
++    
+ # End of testinput2
+ Error -65: PCRE2_ERROR_BADDATA (unknown error number)
+ Error -62: bad serialized data
+diff --git a/testdata/testoutput6 b/testdata/testoutput6
+index 998f20b..b409fe0 100644
+--- a/testdata/testoutput6
++++ b/testdata/testoutput6
+@@ -7766,4 +7766,9 @@ Failed: error -47: match limit exceeded
+     xyz\r\nabc
+ No match
+ 
++/[abc]/firstline
++\= Expect no match
++    \na
++No match
++    
+ # End of testinput6
+-- 
+2.13.6
+
