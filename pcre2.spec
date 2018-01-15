@@ -1,12 +1,15 @@
+# Add readline edditing in pcre2test tool
+%bcond_without pcre2_enables_readline
+
 # Disable SELinux-frindly JIT allocator because it seems not to be fork-safe,
 # https://bugs.exim.org/show_bug.cgi?id=1749#c45
-%{bcond_with pcre2_enables_sealloc}
+%bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.30
-Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
+Version:    10.31
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -17,23 +20,26 @@ Summary:    Perl-compatible regular expression library
 #                                       for testdata
 #Bundled
 # src/sljit:                            BSD
-#Not distributed in binary package
+#Not distributed in any binary package
 # aclocal.m4:                           FSFULLR and GPLv2+ with exception
 # ar-lib:                               GPLv2+ with exception
 # autotools:                            GPLv3+ with exception
+# cmake/COPYING-CMAKE-SCRIPTS:          BSD
 # compile:                              GPLv2+ with exception
 # config.sub:                           GPLv3+ with exception
+# configure:                            FSFUL and GPLv2+ with exception
 # depcomp:                              GPLv2+ with exception
 # install-sh:                           MIT
-# ltmain.sh:                            GPLv2+ with exception and GPLv3+ with
-#                                       exception and GPLv3+
+# ltmain.sh:                            GPLv2+ with exception and (MIT or GPLv3+)
 # m4/ax_pthread.m4:                     GPLv3+ with exception
-# m4/libtool.m4:                        FSFULLR and GPLv2+ with exception
+# m4/libtool.m4:                        FSFUL and FSFULLR and
+#                                       GPLv2+ with exception
 # m4/ltoptions.m4:                      FSFULLR
 # m4/ltsugar.m4:                        FSFULLR
 # m4/ltversion.m4:                      FSFULLR
 # m4/lt~obsolete.m4:                    FSFULLR
 # m4/pcre2_visibility.m4:               FSFULLR
+# Makefile.in:                          FSFULLR
 # missing:                              GPLv2+ with exception
 # test-driver:                          GPLv2+ with exception
 # testdata:                             Public Domain
@@ -42,44 +48,6 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# 1/2 Accept files names longer than 128 bytes in recursive mode of pcre2grep,
-# upstream bug #2177, in upstream after 10.30
-Patch1:     pcre2-10.30-Fix-pcre2grep-recursive-file-name-length-issue.patch
-# 2/2 Accept files names longer than 128 bytes in recursive mode of pcre2grep,
-# upstream bug #2177, in upstream after 10.30
-Patch2:     pcre2-10.30-Fix-memory-leak-issue-introduced-in-last-bug-fix-in-.patch
-# Required for Fix-multiple-multiline-matching-issues-in-pcre2grep.patch
-Patch3:     pcre2-10.30-Remove-superflous-variable.patch
-# Fix multi-line matching in pcre2grep tool, upstream bug #2187,
-# in upstream after 10.30
-Patch4:     pcre2-10.30-Fix-multiple-multiline-matching-issues-in-pcre2grep.patch
-# Fix pcre2_jit_match() to properly check the pattern was JIT-compiled,
-# in upstream after 10.30
-Patch5:     pcre2-10.30-Fix-pcre2_jit_match-early-check.patch
-# Allow pcre2grep match counter to handle values larger than 2147483647,
-# upstream bug #2208, in upstream after 10.30
-Patch6:     pcre2-10.30-Change-pcre2grep-line-number-and-count-variables-to-.patch
-# Fix incorrect first matching character when a backreference with zero minimum
-# repeat starts a pattern, upstream bug #2209, in upstream after 10.30
-Patch7:     pcre2-10.30-Fix-incorrect-first-matching-character-when-a-backre.patch
-# 1/2 Fix handling \K in an assertion in documentation, upstream bug #2211,
-# in upstream after 10.30
-Patch8:     pcre2-10.30-Update-pcre2demo-to-deal-with-various-K-inside-asser.patch
-# 2/2 Fix handling \K in an assertion in documentation, upstream bug #2211,
-# upstream bug #2211, in upstream after 10.30
-Patch9:     pcre2-10.30-Documentation-update.patch
-# Fix handling \K in an assertion in pcre2grep tool, upstream bug #2211,
-# in upstream after 10.30
-Patch10:    pcre2-10.30-Fix-K-issues-in-pcre2grep.patch
-# 1/3 Fix matching at a first code unit of a new line sequence if
-# PCRE2_FIRSTLINE is enabled, in upstream after 10.30
-Patch11:    pcre2-10.30-FIRSTLINE_documentation-update.patch
-# 2/3 Fix matching at a first code unit of a new line sequence if
-# PCRE2_FIRSTLINE is enabled, in upstream after 10.30
-Patch12:    pcre2-10.30-Fix-PCRE2_FIRSTLINE-bug-when-a-pattern-match-starts-.patch
-# 3/3 Fix matching at a first code unit of a new line sequence if
-# PCRE2_FIRSTLINE is enabled, in upstream after 10.30
-Patch13:    pcre2-10.30-Previous-FIRSTLINE-patch-was-broken.-Fix-it.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -154,19 +122,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -203,7 +158,11 @@ autoreconf -vif
     --disable-pcre2grep-libbz2 \
     --disable-pcre2grep-libz \
     --disable-pcre2test-libedit \
+%if %{with pcre2_enables_readline}
     --enable-pcre2test-libreadline \
+%else
+    --disable-pcre2test-libreadline \
+%endif
     --disable-rebuild-chartables \
     --enable-shared \
     --disable-silent-rules \
@@ -270,6 +229,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jan 15 2018 Petr Pisar <ppisar@redhat.com> - 10.31-0.1.RC1
+- 10.31-RC1 bump
+
 * Fri Jan 12 2018 Petr Pisar <ppisar@redhat.com> - 10.30-5
 - Fix handling \K in an assertion in pcre2grep tool and documentation
   (upstream bug #2211)
