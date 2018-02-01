@@ -9,7 +9,7 @@
 %global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,6 +51,9 @@ Patch0:     pcre2-10.10-Fix-multilib.patch
 # Enlarge ovector array match data structure to be large enough in all cases,
 # in upstream after 10.31-RC1, oss-fuzz #5415
 Patch1:     pcre2-10.31-RC1-Increment-dummy-ovector-size-in-internal-structures-.patch
+# Fix auto-possessification at the end of a capturing group that is called,
+# recursively, in upstream after 10.31-RC1, upstream bug #2232
+Patch2:     pcre2-10.31-RC1-Fix-auto-possessification-bug-at-the-end-of-a-captur.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -126,6 +129,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -233,6 +237,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Feb 01 2018 Petr Pisar <ppisar@redhat.com> - 10.31-0.3.RC1
+- Fix auto-possessification at the end of a capturing group that is called
+  recursively (upstream bug #2232)
+
 * Tue Jan 30 2018 Petr Pisar <ppisar@redhat.com> - 10.31-0.2.RC1
 - Enlarge ovector array match data structure to be large enough in all cases
   (oss-fuzz #5415)
