@@ -9,7 +9,7 @@
 %global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}.1
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -189,14 +189,9 @@ rm -rf $RPM_BUILD_ROOT%{_docdir}/pcre2
 %check
 make %{?_smp_mflags} check VERBOSE=yes
 
-%post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
-
-%post utf16 -p /sbin/ldconfig
-%postun utf16 -p /sbin/ldconfig
-
-%post utf32 -p /sbin/ldconfig
-%postun utf32 -p /sbin/ldconfig
+%ldconfig_scriptlets
+%ldconfig_scriptlets utf16
+%ldconfig_scriptlets utf32
 
 %files
 %{_libdir}/libpcre2-8.so.*
@@ -237,6 +232,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Feb 02 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 10.31-0.3.RC1.1
+- Switch to %%ldconfig_scriptlets
+
 * Thu Feb 01 2018 Petr Pisar <ppisar@redhat.com> - 10.31-0.3.RC1
 - Fix auto-possessification at the end of a capturing group that is called
   recursively (upstream bug #2232)
