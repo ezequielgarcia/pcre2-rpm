@@ -6,10 +6,10 @@
 %bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-%global rcversion RC1
+#%%global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}.2
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -48,19 +48,15 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Enlarge ovector array match data structure to be large enough in all cases,
-# in upstream after 10.31-RC1, oss-fuzz #5415
-Patch1:     pcre2-10.31-RC1-Increment-dummy-ovector-size-in-internal-structures-.patch
-# Fix auto-possessification at the end of a capturing group that is called,
-# recursively, in upstream after 10.31-RC1, upstream bug #2232
-Patch2:     pcre2-10.31-RC1-Fix-auto-possessification-bug-at-the-end-of-a-captur.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
 BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  make
+%if %{with pcre2_enables_readline}
 BuildRequires:  readline-devel
+%endif
 Provides:       bundled(sljit)
 
 %description
@@ -128,8 +124,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -232,6 +226,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Feb 12 2018 Petr Pisar <ppisar@redhat.com> - 10.31-1
+- 10.31 bump
+
 * Thu Feb 08 2018 Fedora Release Engineering <releng@fedoraproject.org> - 10.31-0.3.RC1.2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
