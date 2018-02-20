@@ -48,7 +48,7 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Fix returning unset groups in POSIX interface if REG_STARTEND a non-zero
+# Fix returning unset groups in POSIX interface if REG_STARTEND has a non-zero
 # starting offset, upstream bug #2244, in upstream after 10.31
 Patch1:     pcre2-10.31-Fix-the-value-passed-back-for-POSIX-unset-groups-whe.patch
 # 1/2 Fix pcre2test -C to correctly show what \R matches,
@@ -243,7 +243,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 
 %changelog
 * Tue Feb 20 2018 Petr Pisar <ppisar@redhat.com> - 10.31-2
-- Fix returning unset groups in POSIX interface if REG_STARTEND a non-zero
+- Fix returning unset groups in POSIX interface if REG_STARTEND has a non-zero
   starting offset (upstream bug #2244)
 - Fix pcre2test -C to correctly show what \R matches
 - Fix matching repeated character classes against an 8-bit string containting
