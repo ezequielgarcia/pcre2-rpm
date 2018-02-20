@@ -1,0 +1,120 @@
+From ea6f7a508aaa2fd61eb60d7759fe00713f46cd5c Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 19 Feb 2018 17:26:33 +0000
+Subject: [PATCH] Fix \C bug with repeated character classes in UTF-8 mode.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@918 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.31.
+---
+ src/pcre2_match.c        | 16 ++++++++++++----
+ testdata/testinput22     |  3 +++
+ testdata/testoutput22-16 |  4 ++++
+ testdata/testoutput22-32 |  4 ++++
+ testdata/testoutput22-8  |  4 ++++
+
+diff --git a/src/pcre2_match.c b/src/pcre2_match.c
+index 79cc93f..ce96016 100644
+--- a/src/pcre2_match.c
++++ b/src/pcre2_match.c
+@@ -1962,11 +1962,15 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
+ 
+           if (reptype == REPTYPE_POS) continue;    /* No backtracking */
+ 
++          /* After \C in UTF mode, Lstart_eptr might be in the middle of a
++          Unicode character. Use <= Lstart_eptr to ensure backtracking doesn't
++          go too far. */
++
+           for (;;)
+             {
+             RMATCH(Fecode, RM201);
+             if (rrc != MATCH_NOMATCH) RRETURN(rrc);
+-            if (Feptr-- == Lstart_eptr) break;  /* Tried at original position */
++            if (Feptr-- <= Lstart_eptr) break;  /* Tried at original position */
+             BACKCHAR(Feptr);
+             }
+           }
+@@ -2126,11 +2130,15 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
+ 
+         if (reptype == REPTYPE_POS) continue;    /* No backtracking */
+ 
++        /* After \C in UTF mode, Lstart_eptr might be in the middle of a
++        Unicode character. Use <= Lstart_eptr to ensure backtracking doesn't
++        go too far. */
++
+         for(;;)
+           {
+           RMATCH(Fecode, RM101);
+           if (rrc != MATCH_NOMATCH) RRETURN(rrc);
+-          if (Feptr-- == Lstart_eptr) break;  /* Tried at original position */
++          if (Feptr-- <= Lstart_eptr) break;  /* Tried at original position */
+ #ifdef SUPPORT_UNICODE
+           if (utf) BACKCHAR(Feptr);
+ #endif
+@@ -4002,8 +4010,8 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
+         if (reptype == REPTYPE_POS) continue;    /* No backtracking */
+ 
+         /* After \C in UTF mode, Lstart_eptr might be in the middle of a
+-        Unicode character. Use <= pp to ensure backtracking doesn't go too far.
+-        */
++        Unicode character. Use <= Lstart_eptr to ensure backtracking doesn't
++        go too far. */
+ 
+         for(;;)
+           {
+diff --git a/testdata/testinput22 b/testdata/testinput22
+index e6d4053..c218ea6 100644
+--- a/testdata/testinput22
++++ b/testdata/testinput22
+@@ -98,4 +98,7 @@
+ \= Expect no match - tests \C at end of subject
+     ab
+ 
++/\C[^\v]+\x80/utf
++    [AΏBŀC]
++
+ # End of testinput22
+diff --git a/testdata/testoutput22-16 b/testdata/testoutput22-16
+index 88f827c..5e23611 100644
+--- a/testdata/testoutput22-16
++++ b/testdata/testoutput22-16
+@@ -171,4 +171,8 @@ No match
+     ab
+ No match
+ 
++/\C[^\v]+\x80/utf
++    [AΏBŀC]
++No match
++
+ # End of testinput22
+diff --git a/testdata/testoutput22-32 b/testdata/testoutput22-32
+index ac485fc..8576f31 100644
+--- a/testdata/testoutput22-32
++++ b/testdata/testoutput22-32
+@@ -169,4 +169,8 @@ No match
+     ab
+ No match
+ 
++/\C[^\v]+\x80/utf
++    [AΏBŀC]
++No match
++
+ # End of testinput22
+diff --git a/testdata/testoutput22-8 b/testdata/testoutput22-8
+index 3d31fbc..8543652 100644
+--- a/testdata/testoutput22-8
++++ b/testdata/testoutput22-8
+@@ -173,4 +173,8 @@ No match
+     ab
+ No match
+ 
++/\C[^\v]+\x80/utf
++    [AΏBŀC]
++No match
++
+ # End of testinput22
+-- 
+2.13.6
+

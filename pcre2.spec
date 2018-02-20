@@ -57,6 +57,9 @@ Patch2:     pcre2-10.31-Fix-pcre2test-C-to-correctly-show-what-R-matches.patch
 # 2/2 Fix pcre2test -C to correctly show what \R matches,
 # in upstream after 10.31
 Patch3:     pcre2-10.31-Oops-forgot-about-C-bsr-in-previous-patch.patch
+# Fix matching repeated character classes against an 8-bit string containting
+# multi-code-unit characters, in upstream after 10.31
+Patch4:     pcre2-10.31-Fix-C-bug-with-repeated-character-classes-in-UTF-8-m.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -136,6 +139,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -242,6 +246,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Fix returning unset groups in POSIX interface if REG_STARTEND a non-zero
   starting offset (upstream bug #2244)
 - Fix pcre2test -C to correctly show what \R matches
+- Fix matching repeated character classes against an 8-bit string containting
+  multi-code-unit characters
 
 * Mon Feb 12 2018 Petr Pisar <ppisar@redhat.com> - 10.31-1
 - 10.31 bump
