@@ -1,0 +1,30 @@
+From 93c716bf538a172222aa60f77cff5ef46103c125 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 19 Feb 2018 16:55:47 +0000
+Subject: [PATCH 1/2] Fix pcre2test -C to correctly show what \R matches.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@916 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.31.
+---
+ src/pcre2test.c | 3 ++-
+
+diff --git a/src/pcre2test.c b/src/pcre2test.c
+index 7eca618..40e2161 100644
+--- a/src/pcre2test.c
++++ b/src/pcre2test.c
+@@ -7877,7 +7877,8 @@ else
+ (void)PCRE2_CONFIG(PCRE2_CONFIG_NEWLINE, &optval);
+ print_newline_config(optval, FALSE);
+ (void)PCRE2_CONFIG(PCRE2_CONFIG_BSR, &optval);
+-printf("  \\R matches %s\n", optval? "CR, LF, or CRLF only" :
++printf("  \\R matches %s\n", 
++  (optval == PCRE2_BSR_ANYCRLF)? "CR, LF, or CRLF only" :
+                                  "all Unicode newlines");
+ (void)PCRE2_CONFIG(PCRE2_CONFIG_NEVER_BACKSLASH_C, &optval);
+ printf("  \\C is %ssupported\n", optval? "not ":"");
+-- 
+2.13.6
+

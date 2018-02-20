@@ -51,6 +51,12 @@ Patch0:     pcre2-10.10-Fix-multilib.patch
 # Fix returning unset groups in POSIX interface if REG_STARTEND a non-zero
 # starting offset, upstream bug #2244, in upstream after 10.31
 Patch1:     pcre2-10.31-Fix-the-value-passed-back-for-POSIX-unset-groups-whe.patch
+# 1/2 Fix pcre2test -C to correctly show what \R matches,
+# in upstream after 10.31
+Patch2:     pcre2-10.31-Fix-pcre2test-C-to-correctly-show-what-R-matches.patch
+# 2/2 Fix pcre2test -C to correctly show what \R matches,
+# in upstream after 10.31
+Patch3:     pcre2-10.31-Oops-forgot-about-C-bsr-in-previous-patch.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -128,6 +134,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
+%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -233,6 +241,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Tue Feb 20 2018 Petr Pisar <ppisar@redhat.com> - 10.31-2
 - Fix returning unset groups in POSIX interface if REG_STARTEND a non-zero
   starting offset (upstream bug #2244)
+- Fix pcre2test -C to correctly show what \R matches
 
 * Mon Feb 12 2018 Petr Pisar <ppisar@redhat.com> - 10.31-1
 - 10.31 bump
