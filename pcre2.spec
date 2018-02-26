@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -60,6 +60,9 @@ Patch3:     pcre2-10.31-Oops-forgot-about-C-bsr-in-previous-patch.patch
 # Fix matching repeated character classes against an 8-bit string containting
 # multi-code-unit characters, in upstream after 10.31
 Patch4:     pcre2-10.31-Fix-C-bug-with-repeated-character-classes-in-UTF-8-m.patch
+# Add support to pcre2grep for binary zeros in -f files, upstream bug #2222,
+# in upstream after 10.31
+Patch5:     pcre2-10.31-Add-support-to-pcre2grep-for-binary-zeros-in-f-files.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -140,6 +143,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -242,6 +246,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Feb 26 2018 Petr Pisar <ppisar@redhat.com> - 10.31-3
+- Add support to pcre2grep for binary zeros in -f files (upstream bug #2222)
+
 * Tue Feb 20 2018 Petr Pisar <ppisar@redhat.com> - 10.31-2
 - Fix returning unset groups in POSIX interface if REG_STARTEND has a non-zero
   starting offset (upstream bug #2244)
