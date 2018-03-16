@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -65,6 +65,9 @@ Patch4:     pcre2-10.31-Fix-C-bug-with-repeated-character-classes-in-UTF-8-m.pat
 Patch5:     pcre2-10.31-Add-support-to-pcre2grep-for-binary-zeros-in-f-files.patch
 # Fix compiler warnings in pcre2grep, in upstream after 10.31
 Patch6:     pcre2-10.31-A-small-fix-to-pcre2grep-to-avoid-compiler-warnings-.patch
+# Fix setting error offset zero for early errors in pcre2_pattern_convert(),
+# in upstream after 10.31
+Patch7:     pcre2-10.31-Set-error-offset-zero-for-early-errors-in-pcre2_patt.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -147,6 +150,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -249,6 +253,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Mar 16 2018 Petr Pisar <ppisar@redhat.com> - 10.31-4
+- Fix setting error offset zero for early errors in pcre2_pattern_convert()
+
 * Mon Feb 26 2018 Petr Pisar <ppisar@redhat.com> - 10.31-3
 - Add support to pcre2grep for binary zeros in -f files (upstream bug #2222)
 - Fix compiler warnings in pcre2grep

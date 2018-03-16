@@ -1,0 +1,65 @@
+From c82ef7bef66138a85362473df622d16bf728499e Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sun, 4 Mar 2018 15:13:37 +0000
+Subject: [PATCH] Set error offset zero for early errors in
+ pcre2_pattern_convert().
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@926 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.31.
+---
+ src/pcre2_convert.c | 12 +++++++++---
+
+diff --git a/src/pcre2_convert.c b/src/pcre2_convert.c
+index bdf9b86..1dd5c33 100644
+--- a/src/pcre2_convert.c
++++ b/src/pcre2_convert.c
+@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
+ 
+                        Written by Philip Hazel
+      Original API code Copyright (c) 1997-2012 University of Cambridge
+-          New API code Copyright (c) 2016-2017 University of Cambridge
++          New API code Copyright (c) 2016-2018 University of Cambridge
+ 
+ -----------------------------------------------------------------------------
+ Redistribution and use in source and binary forms, with or without
+@@ -1066,11 +1066,12 @@ BOOL utf = (options & PCRE2_CONVERT_UTF) != 0;
+ uint32_t pattype = options & TYPE_OPTIONS;
+ 
+ if (pattern == NULL || bufflenptr == NULL) return PCRE2_ERROR_NULL;
++
+ if ((options & ~ALL_OPTIONS) != 0 ||        /* Undefined bit set */
+     (pattype & (~pattype+1)) != pattype ||  /* More than one type set */
+     pattype == 0)                           /* No type set */
+   {
+-  *bufflenptr = 0;  /* Error offset */
++  *bufflenptr = 0;                          /* Error offset */
+   return PCRE2_ERROR_BADOPTION;
+   }
+ 
+@@ -1081,7 +1082,11 @@ if (ccontext == NULL) ccontext =
+ /* Check UTF if required. */
+ 
+ #ifndef SUPPORT_UNICODE
+-if (utf) return PCRE2_ERROR_UNICODE_NOT_SUPPORTED;
++if (utf)
++  {
++  *bufflenptr = 0;  /* Error offset */
++  return PCRE2_ERROR_UNICODE_NOT_SUPPORTED;
++  }
+ #else
+ if (utf && (options & PCRE2_CONVERT_NO_UTF_CHECK) == 0)
+   {
+@@ -1126,6 +1131,7 @@ for (i = 0; i < 2; i++)
+     break;
+ 
+     default:
++    *bufflenptr = 0;  /* Error offset */
+     return PCRE2_ERROR_INTERNAL;
+     }
+ 
+-- 
+2.14.3
+
