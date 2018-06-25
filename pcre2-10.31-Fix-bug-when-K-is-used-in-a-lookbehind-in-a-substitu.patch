@@ -1,0 +1,179 @@
+From 0efedaf8864d1caa8ed0e7f8fb0b50d5231cacfa Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Fri, 22 Jun 2018 16:29:56 +0000
+Subject: [PATCH] Fix bug when \K is used in a lookbehind in a substitute
+ pattern.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@948 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař <ppisar@redhat.com>: Ported to 10.31.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ doc/html/pcre2api.html | 14 ++++++++++++--
+ doc/pcre2.txt          | 14 ++++++++++++--
+ doc/pcre2api.3         |  3 ++-
+ src/pcre2_error.c      |  2 +-
+ src/pcre2_substitute.c |  6 +++---
+ testdata/testinput2    |  3 +++
+ testdata/testoutput2   |  6 +++++-
+ 7 files changed, 38 insertions(+), 10 deletions(-)
+
+diff --git a/doc/html/pcre2api.html b/doc/html/pcre2api.html
+index ba3b2ca..af904e6 100644
+--- a/doc/html/pcre2api.html
++++ b/doc/html/pcre2api.html
+@@ -2549,7 +2549,7 @@ calls to <b>pcre2_match()</b> if you are making repeated calls to find other
+ matches in the same subject string.
+ </P>
+ <P>
+-WARNING: When PCRE2_NO_UTF_CHECK is set, the effect of passing an invalid
++<b>Warning:</b> When PCRE2_NO_UTF_CHECK is set, the effect of passing an invalid
+ string as a subject, or an invalid value of <i>startoffset</i>, is undefined.
+ Your program may crash or loop indefinitely.
+ <pre>
+@@ -2756,6 +2756,15 @@ branch of the group, but it is not on the matching path. On the other hand,
+ when this pattern fails to match "bx", the returned name is B.
+ </P>
+ <P>
++<b>Warning:</b> By default, certain start-of-match optimizations are used to
++give a fast "no match" result in some situations. For example, if the anchoring
++is removed from the pattern above, there is an initial check for the presence
++of "c" in the subject before running the matching engine. This check fails for
++"bx", causing a match failure without seeing any marks. You can disable the
++start-of-match optimizations by setting the PCRE2_NO_START_OPTIMIZE option for
++<b>pcre2_compile()</b> or starting the pattern with (*NO_START_OPT).
++</P>
++<P>
+ After a successful match, a partial match, or one of the invalid UTF errors
+ (for example, PCRE2_ERROR_UTF8_ERR5), <b>pcre2_get_startchar()</b> can be
+ called. After a successful or partial match it returns the code unit offset of
+@@ -3310,7 +3319,8 @@ replacement string, with more particular errors being PCRE2_ERROR_BADREPESCAPE
+ (invalid escape sequence), PCRE2_ERROR_REPMISSINGBRACE (closing curly bracket
+ not found), PCRE2_ERROR_BADSUBSTITUTION (syntax error in extended group
+ substitution), and PCRE2_ERROR_BADSUBSPATTERN (the pattern match ended before
+-it started, which can happen if \K is used in an assertion).
++it started or the match started earlier than the current position in the 
++subject, which can happen if \K is used in an assertion).
+ </P>
+ <P>
+ As for all PCRE2 errors, a text message that describes the error can be
+diff --git a/doc/pcre2.txt b/doc/pcre2.txt
+index 79d94e3..e5b941f 100644
+--- a/doc/pcre2.txt
++++ b/doc/pcre2.txt
+@@ -2498,7 +2498,7 @@ MATCHING A PATTERN: THE TRADITIONAL FUNCTION
+        second and subsequent calls to pcre2_match() if you are making repeated
+        calls to find other matches in the same subject string.
+ 
+-       WARNING: When PCRE2_NO_UTF_CHECK is  set,  the  effect  of  passing  an
++       Warning: When PCRE2_NO_UTF_CHECK is  set,  the  effect  of  passing  an
+        invalid  string  as  a  subject, or an invalid value of startoffset, is
+        undefined.  Your program may crash or loop indefinitely.
+ 
+@@ -2683,6 +2683,15 @@ OTHER INFORMATION ABOUT A MATCH
+        the other hand, when this pattern fails to  match  "bx",  the  returned
+        name is B.
+ 
++       Warning: By default, certain start-of-match optimizations are  used  to
++       give  a  fast "no match" result in some situations. For example, if the
++       anchoring is removed from the pattern above, there is an initial  check
++       for  the  presence  of  "c"  in the subject before running the matching
++       engine. This check fails for "bx", causing a match failure without see-
++       ing any marks. You can disable the start-of-match optimizations by set-
++       ting the PCRE2_NO_START_OPTIMIZE option for pcre2_compile() or starting
++       the pattern with (*NO_START_OPT).
++
+        After  a  successful  match, a partial match, or one of the invalid UTF
+        errors (for example, PCRE2_ERROR_UTF8_ERR5), pcre2_get_startchar()  can
+        be called. After a successful or partial match it returns the code unit
+@@ -3209,7 +3218,8 @@ CREATING A NEW STRING WITH SUBSTITUTIONS
+        PCRE2_ERROR_BADREPESCAPE  (invalid  escape  sequence), PCRE2_ERROR_REP-
+        MISSINGBRACE (closing curly bracket not found),  PCRE2_ERROR_BADSUBSTI-
+        TUTION   (syntax   error   in   extended   group   substitution),   and
+-       PCRE2_ERROR_BADSUBSPATTERN (the pattern match ended before it  started,
++       PCRE2_ERROR_BADSUBSPATTERN (the pattern match ended before  it  started
++       or  the match started earlier than the current position in the subject,
+        which can happen if \K is used in an assertion).
+ 
+        As for all PCRE2 errors, a text message that describes the error can be
+diff --git a/doc/pcre2api.3 b/doc/pcre2api.3
+index 786b314..ac6e246 100644
+--- a/doc/pcre2api.3
++++ b/doc/pcre2api.3
+@@ -3302,7 +3302,8 @@ replacement string, with more particular errors being PCRE2_ERROR_BADREPESCAPE
+ (invalid escape sequence), PCRE2_ERROR_REPMISSINGBRACE (closing curly bracket
+ not found), PCRE2_ERROR_BADSUBSTITUTION (syntax error in extended group
+ substitution), and PCRE2_ERROR_BADSUBSPATTERN (the pattern match ended before
+-it started, which can happen if \eK is used in an assertion).
++it started or the match started earlier than the current position in the 
++subject, which can happen if \eK is used in an assertion).
+ .P
+ As for all PCRE2 errors, a text message that describes the error can be
+ obtained by calling the \fBpcre2_get_error_message()\fP function (see
+diff --git a/src/pcre2_error.c b/src/pcre2_error.c
+index d98cae9..a1f98d4 100644
+--- a/src/pcre2_error.c
++++ b/src/pcre2_error.c
+@@ -255,7 +255,7 @@ static const unsigned char match_error_texts[] =
+   "expected closing curly bracket in replacement string\0"
+   "bad substitution in replacement string\0"
+   /* 60 */
+-  "match with end before start is not supported\0"
++  "match with end before start or start moved backwards is not supported\0"
+   "too many replacements (more than INT_MAX)\0"
+   "bad serialized data\0"
+   "heap limit exceeded\0"
+diff --git a/src/pcre2_substitute.c b/src/pcre2_substitute.c
+index 8da951f..955370a 100644
+--- a/src/pcre2_substitute.c
++++ b/src/pcre2_substitute.c
+@@ -361,9 +361,9 @@ do
+     }
+ 
+   /* Handle a successful match. Matches that use \K to end before they start
+-  are not supported. */
+-
+-  if (ovector[1] < ovector[0])
++  or start before the current point in the subject are not supported. */
++  
++  if (ovector[1] < ovector[0] || ovector[0] < start_offset)
+     {
+     rc = PCRE2_ERROR_BADSUBSPATTERN;
+     goto EXIT;
+diff --git a/testdata/testinput2 b/testdata/testinput2
+index 5d3a80e..3499042 100644
+--- a/testdata/testinput2
++++ b/testdata/testinput2
+@@ -4643,6 +4643,9 @@ B)x/alt_verbnames,mark
+ 
+ /(?=a\K)/replace=z
+     BaCaD
++    
++/(?<=\K.)/g,replace=-
++    ab
+ 
+ /(?'abcdefghijklmnopqrstuvwxyzABCDEFG'toolong)/
+ 
+diff --git a/testdata/testoutput2 b/testdata/testoutput2
+index fcaac8f..f9e128d 100644
+--- a/testdata/testoutput2
++++ b/testdata/testoutput2
+@@ -14899,7 +14899,11 @@ Subject length lower bound = 1
+ 
+ /(?=a\K)/replace=z
+     BaCaD
+-Failed: error -60: match with end before start is not supported
++Failed: error -60: match with end before start or start moved backwards is not supported
++    
++/(?<=\K.)/g,replace=-
++    ab
++Failed: error -60: match with end before start or start moved backwards is not supported
+ 
+ /(?'abcdefghijklmnopqrstuvwxyzABCDEFG'toolong)/
+ Failed: error 148 at offset 36: subpattern name is too long (maximum 32 characters)
+-- 
+2.14.4
+

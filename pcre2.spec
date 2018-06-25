@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -68,6 +68,9 @@ Patch6:     pcre2-10.31-A-small-fix-to-pcre2grep-to-avoid-compiler-warnings-.pat
 # Fix setting error offset zero for early errors in pcre2_pattern_convert(),
 # in upstream after 10.31
 Patch7:     pcre2-10.31-Set-error-offset-zero-for-early-errors-in-pcre2_patt.patch
+# Fix bug when \K is used in a lookbehind in a substitute pattern,
+# in upstream after 10.31
+Patch8:     pcre2-10.31-Fix-bug-when-K-is-used-in-a-lookbehind-in-a-substitu.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -151,6 +154,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -253,6 +257,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jun 25 2018 Petr Pisar <ppisar@redhat.com> - 10.31-5
+- Fix bug when \K is used in a lookbehind in a substitute pattern
+
 * Fri Mar 16 2018 Petr Pisar <ppisar@redhat.com> - 10.31-4
 - Fix setting error offset zero for early errors in pcre2_pattern_convert()
 
