@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -71,6 +71,10 @@ Patch7:     pcre2-10.31-Set-error-offset-zero-for-early-errors-in-pcre2_patt.pat
 # Fix bug when \K is used in a lookbehind in a substitute pattern,
 # in upstream after 10.31
 Patch8:     pcre2-10.31-Fix-bug-when-K-is-used-in-a-lookbehind-in-a-substitu.patch
+# Fix global search/replace in pcre2test and pcre2_substitute() when the pattern
+# matches an empty string, but never at the starting offset,
+# in upstream after 10.31
+Patch9:     pcre2-10.31-Fix-global-search-replace-in-pcre2test-and-pcre2_sub.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -155,6 +159,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -257,6 +262,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jul 02 2018 Petr Pisar <ppisar@redhat.com> - 10.31-6
+- Fix global search/replace in pcre2test and pcre2_substitute() when the pattern
+  matches an empty string, but never at the starting offset
+
 * Mon Jun 25 2018 Petr Pisar <ppisar@redhat.com> - 10.31-5
 - Fix bug when \K is used in a lookbehind in a substitute pattern
 

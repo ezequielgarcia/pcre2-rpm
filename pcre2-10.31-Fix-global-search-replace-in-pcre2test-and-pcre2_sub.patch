@@ -1,0 +1,708 @@
+From 7729d10594572b5e5a3ebfa89064cc176ba50c7e Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 2 Jul 2018 10:54:03 +0000
+Subject: [PATCH] Fix global search/replace in pcre2test and pcre2_substitute()
+ when the pattern matches an empty string, but never at the starting offset.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@955 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.31.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ RunTest                    |   2 +-
+ doc/html/pcre2api.html     |   5 +-
+ doc/html/pcre2pattern.html |   5 +-
+ doc/pcre2.txt              | 175 ++++++++++++++++++++++++---------------------
+ doc/pcre2api.3             |   5 +-
+ src/pcre2.h.in             |   3 +-
+ src/pcre2_error.c          |   4 +-
+ src/pcre2_substitute.c     |  41 +++++++++--
+ src/pcre2test.c            |  77 ++++++++++++--------
+ testdata/testinput1        |   3 +
+ testdata/testinput2        |   3 +
+ testdata/testoutput1       |   9 +++
+ testdata/testoutput2       |   6 +-
+ 13 files changed, 214 insertions(+), 124 deletions(-)
+
+diff --git a/RunTest b/RunTest
+index bc912da..f20f194 100755
+--- a/RunTest
++++ b/RunTest
+@@ -500,7 +500,7 @@ for bmode in "$test8" "$test16" "$test32"; do
+     for opt in "" $jitopt; do
+       $sim $valgrind ${opt:+$vjs} ./pcre2test -q $setstack $bmode $opt $testdata/testinput2 testtry
+       if [ $? = 0 ] ; then
+-        $sim $valgrind ${opt:+$vjs} ./pcre2test -q $bmode $opt -error -65,-62,-2,-1,0,100,101,191,200 >>testtry
++        $sim $valgrind ${opt:+$vjs} ./pcre2test -q $bmode $opt -error -70,-62,-2,-1,0,100,101,191,200 >>testtry
+         checkresult $? 2 "$opt"
+       fi
+     done
+diff --git a/doc/html/pcre2api.html b/doc/html/pcre2api.html
+index ba3b2ca..daa32a9 100644
+--- a/doc/html/pcre2api.html
++++ b/doc/html/pcre2api.html
+@@ -3108,7 +3108,10 @@ string in <i>outputbuffer</i>, replacing the part that was matched with the
+ <i>replacement</i> string, whose length is supplied in <b>rlength</b>. This can
+ be given as PCRE2_ZERO_TERMINATED for a zero-terminated string. Matches in
+ which a \K item in a lookahead in the pattern causes the match to end before
+-it starts are not supported, and give rise to an error return.
++it starts are not supported, and give rise to an error return. For global
++replacements, matches in which \K in a lookbehind causes the match to start
++earlier than the point that was reached in the previous iteration are also not
++supported.
+ </P>
+ <P>
+ The first seven arguments of <b>pcre2_substitute()</b> are the same as for
+diff --git a/doc/html/pcre2pattern.html b/doc/html/pcre2pattern.html
+index c495cba..bc07e8b 100644
+--- a/doc/html/pcre2pattern.html
++++ b/doc/html/pcre2pattern.html
+@@ -1082,8 +1082,9 @@ sequences but the characters that they represent.)
+ Resetting the match start
+ </b><br>
+ <P>
+-The escape sequence \K causes any previously matched characters not to be
+-included in the final matched sequence. For example, the pattern:
++In normal use, the escape sequence \K causes any previously matched characters
++not to be included in the final matched sequence that is returned. For example,
++the pattern:
+ <pre>
+   foo\Kbar
+ </pre>
+diff --git a/doc/pcre2.txt b/doc/pcre2.txt
+index 79d94e3..a82f857 100644
+--- a/doc/pcre2.txt
++++ b/doc/pcre2.txt
+@@ -3014,75 +3014,78 @@ CREATING A NEW STRING WITH SUBSTITUTIONS
+        replacement  string,  whose  length is supplied in rlength. This can be
+        given as PCRE2_ZERO_TERMINATED for a zero-terminated string. Matches in
+        which  a  \K item in a lookahead in the pattern causes the match to end
+-       before it starts are not supported, and give rise to an error return.
++       before it starts are not supported, and give rise to an  error  return.
++       For global replacements, matches in which \K in a lookbehind causes the
++       match to start earlier than the point that was reached in the  previous
++       iteration are also not supported.
+ 
+-       The first seven arguments of pcre2_substitute() are  the  same  as  for
++       The  first  seven  arguments  of pcre2_substitute() are the same as for
+        pcre2_match(), except that the partial matching options are not permit-
+-       ted, and match_data may be passed as NULL, in which case a  match  data
+-       block  is obtained and freed within this function, using memory manage-
+-       ment functions from the match context, if provided, or else those  that
++       ted,  and  match_data may be passed as NULL, in which case a match data
++       block is obtained and freed within this function, using memory  manage-
++       ment  functions from the match context, if provided, or else those that
+        were used to allocate memory for the compiled code.
+ 
+-       The  outlengthptr  argument  must point to a variable that contains the
+-       length, in code units, of the output buffer. If the  function  is  suc-
+-       cessful,  the value is updated to contain the length of the new string,
++       The outlengthptr argument must point to a variable  that  contains  the
++       length,  in  code  units, of the output buffer. If the function is suc-
++       cessful, the value is updated to contain the length of the new  string,
+        excluding the trailing zero that is automatically added.
+ 
+-       If the function is not  successful,  the  value  set  via  outlengthptr
+-       depends  on  the  type  of  error. For syntax errors in the replacement
+-       string, the value is the offset in the  replacement  string  where  the
+-       error  was  detected.  For  other  errors,  the value is PCRE2_UNSET by
+-       default. This includes the case of the output buffer being  too  small,
+-       unless  PCRE2_SUBSTITUTE_OVERFLOW_LENGTH  is  set (see below), in which
+-       case the value is the minimum length needed, including  space  for  the
+-       trailing  zero.  Note  that  in  order  to compute the required length,
+-       pcre2_substitute() has  to  simulate  all  the  matching  and  copying,
++       If  the  function  is  not  successful,  the value set via outlengthptr
++       depends on the type of error. For  syntax  errors  in  the  replacement
++       string,  the  value  is  the offset in the replacement string where the
++       error was detected. For other  errors,  the  value  is  PCRE2_UNSET  by
++       default.  This  includes the case of the output buffer being too small,
++       unless PCRE2_SUBSTITUTE_OVERFLOW_LENGTH is set (see  below),  in  which
++       case  the  value  is the minimum length needed, including space for the
++       trailing zero. Note that in  order  to  compute  the  required  length,
++       pcre2_substitute()  has  to  simulate  all  the  matching  and copying,
+        instead of giving an error return as soon as the buffer overflows. Note
+        also that the length is in code units, not bytes.
+ 
+-       In the replacement string, which is interpreted as a UTF string in  UTF
+-       mode,  and  is  checked  for UTF validity unless the PCRE2_NO_UTF_CHECK
++       In  the replacement string, which is interpreted as a UTF string in UTF
++       mode, and is checked for UTF  validity  unless  the  PCRE2_NO_UTF_CHECK
+        option is set, a dollar character is an escape character that can spec-
+-       ify  the  insertion  of  characters  from  capturing groups or (*MARK),
+-       (*PRUNE), or (*THEN) items in the  pattern.  The  following  forms  are
++       ify the insertion of  characters  from  capturing  groups  or  (*MARK),
++       (*PRUNE),  or  (*THEN)  items  in  the pattern. The following forms are
+        always recognized:
+ 
+          $$                  insert a dollar character
+          $<n> or ${<n>}      insert the contents of group <n>
+          $*MARK or ${*MARK}  insert a (*MARK), (*PRUNE), or (*THEN) name
+ 
+-       Either  a  group  number  or  a  group name can be given for <n>. Curly
+-       brackets are required only if the following character would  be  inter-
++       Either a group number or a group name  can  be  given  for  <n>.  Curly
++       brackets  are  required only if the following character would be inter-
+        preted as part of the number or name. The number may be zero to include
+-       the entire matched string.   For  example,  if  the  pattern  a(b)c  is
+-       matched  with "=abc=" and the replacement string "+$1$0$1+", the result
++       the  entire  matched  string.   For  example,  if  the pattern a(b)c is
++       matched with "=abc=" and the replacement string "+$1$0$1+", the  result
+        is "=+babcb+=".
+ 
+        $*MARK inserts the name from the last encountered (*MARK), (*PRUNE), or
+-       (*THEN)  on  the  matching  path  that  has a name. (*MARK) must always
+-       include a name, but (*PRUNE) and (*THEN) need not. For example, in  the
+-       case   of   (*MARK:A)(*PRUNE)   the  name  inserted  is  "A",  but  for
+-       (*MARK:A)(*PRUNE:B) the relevant name is "B".   This  facility  can  be
+-       used  to  perform  simple simultaneous substitutions, as this pcre2test
++       (*THEN) on the matching path that  has  a  name.  (*MARK)  must  always
++       include  a name, but (*PRUNE) and (*THEN) need not. For example, in the
++       case  of  (*MARK:A)(*PRUNE)  the  name  inserted  is   "A",   but   for
++       (*MARK:A)(*PRUNE:B)  the  relevant  name  is "B".  This facility can be
++       used to perform simple simultaneous substitutions,  as  this  pcre2test
+        example shows:
+ 
+          /(*MARK:pear)apple|(*MARK:orange)lemon/g,replace=${*MARK}
+              apple lemon
+           2: pear orange
+ 
+-       As well as the usual options for pcre2_match(), a number of  additional
++       As  well as the usual options for pcre2_match(), a number of additional
+        options can be set in the options argument of pcre2_substitute().
+ 
+        PCRE2_SUBSTITUTE_GLOBAL causes the function to iterate over the subject
+-       string, replacing every matching substring. If this option is not  set,
+-       only  the  first matching substring is replaced. The search for matches
+-       takes place in the original subject string (that is, previous  replace-
+-       ments  do  not  affect  it).  Iteration is implemented by advancing the
+-       startoffset value for each search, which is always  passed  the  entire
++       string,  replacing every matching substring. If this option is not set,
++       only the first matching substring is replaced. The search  for  matches
++       takes  place in the original subject string (that is, previous replace-
++       ments do not affect it).  Iteration is  implemented  by  advancing  the
++       startoffset  value  for  each search, which is always passed the entire
+        subject string. If an offset limit is set in the match context, search-
+        ing stops when that limit is reached.
+ 
+-       You can restrict the effect of a global substitution to  a  portion  of
++       You  can  restrict  the effect of a global substitution to a portion of
+        the subject string by setting either or both of startoffset and an off-
+        set limit. Here is a pcre2test example:
+ 
+@@ -3090,87 +3093,87 @@ CREATING A NEW STRING WITH SUBSTITUTIONS
+          ABC ABC ABC ABC\=offset=3,offset_limit=12
+           2: ABC A!C A!C ABC
+ 
+-       When continuing with global substitutions after  matching  a  substring
++       When  continuing  with  global substitutions after matching a substring
+        with zero length, an attempt to find a non-empty match at the same off-
+        set is performed.  If this is not successful, the offset is advanced by
+        one character except when CRLF is a valid newline sequence and the next
+-       two characters are CR, LF. In this case, the offset is advanced by  two
++       two  characters are CR, LF. In this case, the offset is advanced by two
+        characters.
+ 
+-       PCRE2_SUBSTITUTE_OVERFLOW_LENGTH  changes  what happens when the output
++       PCRE2_SUBSTITUTE_OVERFLOW_LENGTH changes what happens when  the  output
+        buffer is too small. The default action is to return PCRE2_ERROR_NOMEM-
+-       ORY  immediately.  If  this  option is set, however, pcre2_substitute()
++       ORY immediately. If this option  is  set,  however,  pcre2_substitute()
+        continues to go through the motions of matching and substituting (with-
+-       out,  of course, writing anything) in order to compute the size of buf-
+-       fer that is needed. This value is  passed  back  via  the  outlengthptr
+-       variable,    with    the   result   of   the   function   still   being
++       out, of course, writing anything) in order to compute the size of  buf-
++       fer  that  is  needed.  This  value is passed back via the outlengthptr
++       variable,   with   the   result   of   the   function    still    being
+        PCRE2_ERROR_NOMEMORY.
+ 
+-       Passing a buffer size of zero is a permitted way  of  finding  out  how
+-       much  memory  is needed for given substitution. However, this does mean
++       Passing  a  buffer  size  of zero is a permitted way of finding out how
++       much memory is needed for given substitution. However, this  does  mean
+        that the entire operation is carried out twice. Depending on the appli-
+-       cation,  it  may  be more efficient to allocate a large buffer and free
+-       the  excess  afterwards,  instead   of   using   PCRE2_SUBSTITUTE_OVER-
++       cation, it may be more efficient to allocate a large  buffer  and  free
++       the   excess   afterwards,   instead  of  using  PCRE2_SUBSTITUTE_OVER-
+        FLOW_LENGTH.
+ 
+-       PCRE2_SUBSTITUTE_UNKNOWN_UNSET  causes  references  to capturing groups
+-       that do not appear in the pattern to be treated as unset  groups.  This
+-       option  should  be  used  with  care, because it means that a typo in a
+-       group name or  number  no  longer  causes  the  PCRE2_ERROR_NOSUBSTRING
++       PCRE2_SUBSTITUTE_UNKNOWN_UNSET causes references  to  capturing  groups
++       that  do  not appear in the pattern to be treated as unset groups. This
++       option should be used with care, because it means  that  a  typo  in  a
++       group  name  or  number  no  longer  causes the PCRE2_ERROR_NOSUBSTRING
+        error.
+ 
+-       PCRE2_SUBSTITUTE_UNSET_EMPTY  causes  unset capturing groups (including
++       PCRE2_SUBSTITUTE_UNSET_EMPTY causes unset capturing  groups  (including
+        unknown  groups  when  PCRE2_SUBSTITUTE_UNKNOWN_UNSET  is  set)  to  be
+-       treated  as  empty  strings  when  inserted as described above. If this
+-       option is not set, an attempt to  insert  an  unset  group  causes  the
+-       PCRE2_ERROR_UNSET  error.  This  option does not influence the extended
++       treated as empty strings when inserted  as  described  above.  If  this
++       option  is  not  set,  an  attempt  to insert an unset group causes the
++       PCRE2_ERROR_UNSET error. This option does not  influence  the  extended
+        substitution syntax described below.
+ 
+-       PCRE2_SUBSTITUTE_EXTENDED causes extra processing to be applied to  the
+-       replacement  string.  Without this option, only the dollar character is
+-       special, and only the group insertion forms  listed  above  are  valid.
++       PCRE2_SUBSTITUTE_EXTENDED  causes extra processing to be applied to the
++       replacement string. Without this option, only the dollar  character  is
++       special,  and  only  the  group insertion forms listed above are valid.
+        When PCRE2_SUBSTITUTE_EXTENDED is set, two things change:
+ 
+-       Firstly,  backslash in a replacement string is interpreted as an escape
++       Firstly, backslash in a replacement string is interpreted as an  escape
+        character. The usual forms such as \n or \x{ddd} can be used to specify
+-       particular  character codes, and backslash followed by any non-alphanu-
+-       meric character quotes that character. Extended quoting  can  be  coded
++       particular character codes, and backslash followed by any  non-alphanu-
++       meric  character  quotes  that character. Extended quoting can be coded
+        using \Q...\E, exactly as in pattern strings.
+ 
+-       There  are  also four escape sequences for forcing the case of inserted
+-       letters.  The insertion mechanism has three states:  no  case  forcing,
++       There are also four escape sequences for forcing the case  of  inserted
++       letters.   The  insertion  mechanism has three states: no case forcing,
+        force upper case, and force lower case. The escape sequences change the
+        current state: \U and \L change to upper or lower case forcing, respec-
+-       tively,  and  \E (when not terminating a \Q quoted sequence) reverts to
+-       no case forcing. The sequences \u and \l force the next  character  (if
+-       it  is  a  letter)  to  upper or lower case, respectively, and then the
++       tively, and \E (when not terminating a \Q quoted sequence)  reverts  to
++       no  case  forcing. The sequences \u and \l force the next character (if
++       it is a letter) to upper or lower  case,  respectively,  and  then  the
+        state automatically reverts to no case forcing. Case forcing applies to
+        all inserted  characters, including those from captured groups and let-
+        ters within \Q...\E quoted sequences.
+ 
+        Note that case forcing sequences such as \U...\E do not nest. For exam-
+-       ple,  the  result of processing "\Uaa\LBB\Ecc\E" is "AAbbcc"; the final
++       ple, the result of processing "\Uaa\LBB\Ecc\E" is "AAbbcc";  the  final
+        \E has no effect.
+ 
+-       The second effect of setting PCRE2_SUBSTITUTE_EXTENDED is to  add  more
+-       flexibility  to  group substitution. The syntax is similar to that used
++       The  second  effect of setting PCRE2_SUBSTITUTE_EXTENDED is to add more
++       flexibility to group substitution. The syntax is similar to  that  used
+        by Bash:
+ 
+          ${<n>:-<string>}
+          ${<n>:+<string1>:<string2>}
+ 
+-       As before, <n> may be a group number or a name. The first  form  speci-
+-       fies  a  default  value. If group <n> is set, its value is inserted; if
+-       not, <string> is expanded and the  result  inserted.  The  second  form
+-       specifies  strings that are expanded and inserted when group <n> is set
+-       or unset, respectively. The first form is just a  convenient  shorthand
++       As  before,  <n> may be a group number or a name. The first form speci-
++       fies a default value. If group <n> is set, its value  is  inserted;  if
++       not,  <string>  is  expanded  and  the result inserted. The second form
++       specifies strings that are expanded and inserted when group <n> is  set
++       or  unset,  respectively. The first form is just a convenient shorthand
+        for
+ 
+          ${<n>:+${<n>}:<string>}
+ 
+-       Backslash  can  be  used to escape colons and closing curly brackets in
+-       the replacement strings. A change of the case forcing  state  within  a
+-       replacement  string  remains  in  force  afterwards,  as  shown in this
++       Backslash can be used to escape colons and closing  curly  brackets  in
++       the  replacement  strings.  A change of the case forcing state within a
++       replacement string remains  in  force  afterwards,  as  shown  in  this
+        pcre2test example:
+ 
+          /(some)?(body)/substitute_extended,replace=${1:+\U:\L}HeLLo
+@@ -6614,8 +6617,9 @@ BACKSLASH
+ 
+    Resetting the match start
+ 
+-       The escape sequence \K causes any previously matched characters not  to
+-       be included in the final matched sequence. For example, the pattern:
++       In  normal  use,  the  escape sequence \K causes any previously matched
++       characters not to be included in the final  matched  sequence  that  is
++       returned. For example, the pattern:
+ 
+          foo\Kbar
+ 
+@@ -6634,7 +6638,16 @@ BACKSLASH
+        defined".  In  PCRE2,  \K  is acted upon when it occurs inside positive
+        assertions, but is ignored in negative assertions.  Note  that  when  a
+        pattern  such  as (?=ab\K) matches, the reported start of the match can
+-       be greater than the end of the match.
++       be greater than the end of the match. Using \K in a  lookbehind  asser-
++       tion  at the start of a pattern can also lead to odd effects. For exam-
++       ple, consider this pattern:
++
++         (?<=\Kfoo)bar
++
++       If the subject is "foobar", a call to  pcre2_match()  with  a  starting
++       offset  of 3 succeeds and reports the matching string as "foobar", that
++       is, the start of the reported match is earlier  than  where  the  match
++       started.
+ 
+    Simple assertions
+ 
+diff --git a/doc/pcre2api.3 b/doc/pcre2api.3
+index 786b314..57b6d31 100644
+--- a/doc/pcre2api.3
++++ b/doc/pcre2api.3
+@@ -3122,7 +3122,10 @@ string in \fIoutputbuffer\fP, replacing the part that was matched with the
+ \fIreplacement\fP string, whose length is supplied in \fBrlength\fP. This can
+ be given as PCRE2_ZERO_TERMINATED for a zero-terminated string. Matches in
+ which a \eK item in a lookahead in the pattern causes the match to end before
+-it starts are not supported, and give rise to an error return.
++it starts are not supported, and give rise to an error return. For global
++replacements, matches in which \eK in a lookbehind causes the match to start
++earlier than the point that was reached in the previous iteration are also not
++supported.
+ .P
+ The first seven arguments of \fBpcre2_substitute()\fP are the same as for
+ \fBpcre2_match()\fP, except that the partial matching options are not
+diff --git a/src/pcre2.h.in b/src/pcre2.h.in
+index a3a3fa6..0bc8cca 100644
+--- a/src/pcre2.h.in
++++ b/src/pcre2.h.in
+@@ -5,7 +5,7 @@
+ /* This is the public header file for the PCRE library, second API, to be
+ #included by applications that call PCRE2 functions.
+ 
+-           Copyright (c) 2016-2017 University of Cambridge
++           Copyright (c) 2016-2018 University of Cambridge
+ 
+ -----------------------------------------------------------------------------
+ Redistribution and use in source and binary forms, with or without
+@@ -387,6 +387,7 @@ released, the numbers must not be changed. */
+ #define PCRE2_ERROR_BADSERIALIZEDDATA (-62)
+ #define PCRE2_ERROR_HEAPLIMIT         (-63)
+ #define PCRE2_ERROR_CONVERT_SYNTAX    (-64)
++#define PCRE2_ERROR_INTERNAL_DUPMATCH (-65)
+ 
+ 
+ /* Request types for pcre2_pattern_info() */
+diff --git a/src/pcre2_error.c b/src/pcre2_error.c
+index d98cae9..dce1efb 100644
+--- a/src/pcre2_error.c
++++ b/src/pcre2_error.c
+@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
+ 
+                        Written by Philip Hazel
+      Original API code Copyright (c) 1997-2012 University of Cambridge
+-          New API code Copyright (c) 2016-2017 University of Cambridge
++          New API code Copyright (c) 2016-2018 University of Cambridge
+ 
+ -----------------------------------------------------------------------------
+ Redistribution and use in source and binary forms, with or without
+@@ -260,6 +260,8 @@ static const unsigned char match_error_texts[] =
+   "bad serialized data\0"
+   "heap limit exceeded\0"
+   "invalid syntax\0"
++  /* 65 */ 
++  "internal error - duplicate substitution match\0"
+   ;
+ 
+ 
+diff --git a/src/pcre2_substitute.c b/src/pcre2_substitute.c
+index 8da951f..582a42d 100644
+--- a/src/pcre2_substitute.c
++++ b/src/pcre2_substitute.c
+@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
+ 
+                        Written by Philip Hazel
+      Original API code Copyright (c) 1997-2012 University of Cambridge
+-         New API code Copyright (c) 2016 University of Cambridge
++          New API code Copyright (c) 2016-2018 University of Cambridge
+ 
+ -----------------------------------------------------------------------------
+ Redistribution and use in source and binary forms, with or without
+@@ -238,10 +238,12 @@ PCRE2_SPTR repend;
+ PCRE2_SIZE extra_needed = 0;
+ PCRE2_SIZE buff_offset, buff_length, lengthleft, fraglength;
+ PCRE2_SIZE *ovector;
++PCRE2_SIZE ovecsave[3];
+ 
+ buff_offset = 0;
+ lengthleft = buff_length = *blength;
+ *blength = PCRE2_UNSET;
++ovecsave[0] = ovecsave[1] = ovecsave[2] = PCRE2_UNSET;
+ 
+ /* Partial matching is not valid. */
+ 
+@@ -368,6 +370,26 @@ do
+     rc = PCRE2_ERROR_BADSUBSPATTERN;
+     goto EXIT;
+     }
++    
++  /* Check for the same match as previous. This is legitimate after matching an 
++  empty string that starts after the initial match offset. We have tried again
++  at the match point in case the pattern is one like /(?<=\G.)/ which can never
++  match at its starting point, so running the match achieves the bumpalong. If
++  we do get the same (null) match at the original match point, it isn't such a
++  pattern, so we now do the empty string magic. In all other cases, a repeat
++  match should never occur. */
++    
++  if (ovecsave[0] == ovector[0] && ovecsave[1] == ovector[1])
++    {                                                                        
++    if (ovector[0] == ovector[1] && ovecsave[2] != start_offset)     
++      {                                                                   
++      goptions = PCRE2_NOTEMPTY_ATSTART | PCRE2_ANCHORED;                 
++      ovecsave[2] = start_offset;                                     
++      continue;    /* Back to the top of the loop */                        
++      }
++    rc = PCRE2_ERROR_INTERNAL_DUPMATCH;
++    goto EXIT;   
++    }   
+ 
+   /* Count substitutions with a paranoid check for integer overflow; surely no
+   real call to this function would ever hit this! */
+@@ -799,13 +821,18 @@ do
+       } /* End handling a literal code unit */
+     }   /* End of loop for scanning the replacement. */
+ 
+-  /* The replacement has been copied to the output. Update the start offset to
+-  point to the rest of the subject string. If we matched an empty string,
+-  do the magic for global matches. */
+-
+-  start_offset = ovector[1];
+-  goptions = (ovector[0] != ovector[1])? 0 :
++  /* The replacement has been copied to the output. Save the details of this
++  match. See above for how this data is used. If we matched an empty string, do
++  the magic for global matches. Finally, update the start offset to point to
++  the rest of the subject string. */
++  
++  ovecsave[0] = ovector[0];                                
++  ovecsave[1] = ovector[1];                                        
++  ovecsave[2] = start_offset;
++   
++  goptions = (ovector[0] != ovector[1] || ovector[0] > start_offset)? 0 :
+     PCRE2_ANCHORED|PCRE2_NOTEMPTY_ATSTART;
++  start_offset = ovector[1];
+   } while ((suboptions & PCRE2_SUBSTITUTE_GLOBAL) != 0);  /* Repeat "do" loop */
+ 
+ /* Copy the rest of the subject. */
+diff --git a/src/pcre2test.c b/src/pcre2test.c
+index ad3db2c..d83aa43 100644
+--- a/src/pcre2test.c
++++ b/src/pcre2test.c
+@@ -6283,6 +6283,7 @@ size_t needlen;
+ void *use_dat_context;
+ BOOL utf;
+ BOOL subject_literal;
++PCRE2_SIZE ovecsave[3];
+ 
+ #ifdef SUPPORT_PCRE2_8
+ uint8_t *q8 = NULL;
+@@ -6929,6 +6930,9 @@ if (dat_datctl.replacement[0] != 0)
+ 
+   if (timeitm)
+     fprintf(outfile, "** Timing is not supported with replace: ignored\n");
++    
++  if ((dat_datctl.control & CTL_ALTGLOBAL) != 0)
++    fprintf(outfile, "** Altglobal is not supported with replace: ignored\n"); 
+ 
+   xoptions = (((dat_datctl.control & CTL_GLOBAL) == 0)? 0 :
+                 PCRE2_SUBSTITUTE_GLOBAL) |
+@@ -7048,35 +7052,24 @@ if (dat_datctl.replacement[0] != 0)
+     }
+ 
+   fprintf(outfile, "\n");
++  show_memory = FALSE;
++  return PR_OK;
+   }   /* End of substitution handling */
+ 
+ /* When a replacement string is not provided, run a loop for global matching
+-with one of the basic matching functions. */
++with one of the basic matching functions. For altglobal (or first time round
++the loop), set an "unset" value for the previous match info. */
++
++ovecsave[0] = ovecsave[1] = ovecsave[2] = PCRE2_UNSET;
+ 
+-else for (gmatched = 0;; gmatched++)
++for (gmatched = 0;; gmatched++)
+   {
+   PCRE2_SIZE j;
+   int capcount;
+   PCRE2_SIZE *ovector;
+-  PCRE2_SIZE ovecsave[2];
+ 
+   ovector = FLD(match_data, ovector);
+ 
+-  /* After the first time round a global loop, for a normal global (/g)
+-  iteration, save the current ovector[0,1] so that we can check that they do
+-  change each time. Otherwise a matching bug that returns the same string
+-  causes an infinite loop. It has happened! */
+-
+-  if (gmatched > 0 && (dat_datctl.control & CTL_GLOBAL) != 0)
+-    {
+-    ovecsave[0] = ovector[0];
+-    ovecsave[1] = ovector[1];
+-    }
+-
+-  /* For altglobal (or first time round the loop), set an "unset" value. */
+-
+-  else ovecsave[0] = ovecsave[1] = PCRE2_UNSET;
+-
+   /* Fill the ovector with junk to detect elements that do not get set
+   when they should be. */
+ 
+@@ -7243,12 +7236,23 @@ else for (gmatched = 0;; gmatched++)
+       }
+ 
+     /* If this is not the first time round a global loop, check that the
+-    returned string has changed. If not, there is a bug somewhere and we must
+-    break the loop because it will go on for ever. We know that there are
+-    always at least two elements in the ovector. */
+-
++    returned string has changed. If it has not, check for an empty string match 
++    at different starting offset from the previous match. This is a failed test
++    retry for null-matching patterns that don't match at their starting offset,
++    for example /(?<=\G.)/. A repeated match at the same point is not such a
++    pattern, and must be discarded, and we then proceed to seek a non-null
++    match at the current point. For any other repeated match, there is a bug
++    somewhere and we must break the loop because it will go on for ever. We
++    know that there are always at least two elements in the ovector. */
++    
+     if (gmatched > 0 && ovecsave[0] == ovector[0] && ovecsave[1] == ovector[1])
+       {
++      if (ovector[0] == ovector[1] && ovecsave[2] != dat_datctl.offset)
++        {
++        g_notempty = PCRE2_NOTEMPTY_ATSTART | PCRE2_ANCHORED;
++        ovecsave[2] = dat_datctl.offset; 
++        continue;    /* Back to the top of the loop */
++        }  
+       fprintf(outfile,
+         "** PCRE2 error: global repeat returned the same string as previous\n");
+       fprintf(outfile, "** Global loop abandoned\n");
+@@ -7556,6 +7560,7 @@ else for (gmatched = 0;; gmatched++)
+ 
+   if ((dat_datctl.control & CTL_ANYGLOB) == 0) break; else
+     {
++    PCRE2_SIZE match_offset = FLD(match_data, ovector)[0];
+     PCRE2_SIZE end_offset = FLD(match_data, ovector)[1];
+ 
+     /* We must now set up for the next iteration of a global search. If we have
+@@ -7563,12 +7568,19 @@ else for (gmatched = 0;; gmatched++)
+     subject. If so, the loop is over. Otherwise, mimic what Perl's /g option
+     does. Set PCRE2_NOTEMPTY_ATSTART and PCRE2_ANCHORED and try the match again
+     at the same point. If this fails it will be picked up above, where a fake
+-    match is set up so that at this point we advance to the next character. */
+-
+-    if (FLD(match_data, ovector)[0] == end_offset)
++    match is set up so that at this point we advance to the next character. 
++    
++    However, in order to cope with patterns that never match at their starting 
++    offset (e.g. /(?<=\G.)/) we don't do this when the match offset is greater 
++    than the starting offset. This means there will be a retry with the 
++    starting offset at the match offset. If this returns the same match again,
++    it is picked up above and ignored, and the special action is then taken. */
++
++    if (match_offset == end_offset)
+       {
+-      if (end_offset == ulen) break;      /* End of subject */
+-      g_notempty = PCRE2_NOTEMPTY_ATSTART | PCRE2_ANCHORED;
++      if (end_offset == ulen) break;           /* End of subject */
++      if (match_offset <= dat_datctl.offset)
++        g_notempty = PCRE2_NOTEMPTY_ATSTART | PCRE2_ANCHORED;
+       }
+ 
+     /* However, even after matching a non-empty string, there is still one
+@@ -7606,10 +7618,19 @@ else for (gmatched = 0;; gmatched++)
+         }
+       }
+ 
+-    /* For /g (global), update the start offset, leaving the rest alone. */
++    /* For a normal global (/g) iteration, save the current ovector[0,1] and
++    the starting offset so that we can check that they do change each time.
++    Otherwise a matching bug that returns the same string causes an infinite
++    loop. It has happened! Then update the start offset, leaving other 
++    parameters alone. */
+ 
+     if ((dat_datctl.control & CTL_GLOBAL) != 0)
++      {
++      ovecsave[0] = ovector[0];
++      ovecsave[1] = ovector[1];
++      ovecsave[2] = dat_datctl.offset; 
+       dat_datctl.offset = end_offset;
++      } 
+ 
+     /* For altglobal, just update the pointer and length. */
+ 
+diff --git a/testdata/testinput1 b/testdata/testinput1
+index 9a9c5fd..fb50238 100644
+--- a/testdata/testinput1
++++ b/testdata/testinput1
+@@ -6189,4 +6189,7 @@ ef) x/x,mark
+ /(?=a+)a(a+)++b/
+     aab
+ 
++/(?<=\G.)/g,aftertext
++    abc
++
+ # End of testinput1 
+diff --git a/testdata/testinput2 b/testdata/testinput2
+index 5d3a80e..797b0f7 100644
+--- a/testdata/testinput2
++++ b/testdata/testinput2
+@@ -4935,6 +4935,9 @@ a)"xI
+ //replace=0
+     \=offset=7
+ 
++/(?<=\G.)/g,replace=+
++    abc
++
+ ".+\QX\E+"B,no_auto_possess
+ 
+ ".+\QX\E+"B,auto_callout,no_auto_possess
+diff --git a/testdata/testoutput1 b/testdata/testoutput1
+index 9c55be9..348dcbc 100644
+--- a/testdata/testoutput1
++++ b/testdata/testoutput1
+@@ -9822,4 +9822,13 @@ No match
+  0: aab
+  1: a
+ 
++/(?<=\G.)/g,aftertext
++    abc
++ 0: 
++ 0+ bc
++ 0: 
++ 0+ c
++ 0: 
++ 0+ 
++
+ # End of testinput1 
+diff --git a/testdata/testoutput2 b/testdata/testoutput2
+index fcaac8f..5c13f5b 100644
+--- a/testdata/testoutput2
++++ b/testdata/testoutput2
+@@ -15545,6 +15545,10 @@ Failed: error -57 at offset 2 in replacement: bad escape sequence in replacement
+     \=offset=7
+ Failed: error -33: bad offset value
+ 
++/(?<=\G.)/g,replace=+
++    abc
++ 3: a+b+c+
++
+ ".+\QX\E+"B,no_auto_possess
+ ------------------------------------------------------------------
+         Bra
+@@ -16576,7 +16580,7 @@ No match
+ ------------------------------------------------------------------
+ 
+ # End of testinput2
+-Error -65: PCRE2_ERROR_BADDATA (unknown error number)
++Error -70: PCRE2_ERROR_BADDATA (unknown error number)
+ Error -62: bad serialized data
+ Error -2: partial match
+ Error -1: no match
+-- 
+2.14.4
+
