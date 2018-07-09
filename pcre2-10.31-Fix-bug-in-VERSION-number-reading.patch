@@ -1,0 +1,73 @@
+From c75868f77eb2ce2ff277355afcd966e3179e65a8 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 2 Jul 2018 12:26:04 +0000
+Subject: [PATCH] Fix bug in VERSION number reading.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@957 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.31.
+---
+ src/pcre2_compile.c  | 5 ++---
+ testdata/testinput2  | 3 +++
+ testdata/testoutput2 | 6 +++++-
+ 4 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index 5a47f1d..1208012 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -3896,9 +3896,8 @@ while (ptr < ptrend)
+         if (*ptr == CHAR_DOT)
+           {
+           if (++ptr >= ptrend || !IS_DIGIT(*ptr)) goto BAD_VERSION_CONDITION;
+-          if (!read_number(&ptr, ptrend, -1, 99 , ERR79, &minor, &errorcode))
+-            goto FAILED;
+-          if (minor < 10) minor *= 10;
++          minor = (*ptr++ - CHAR_0) * 10;
++          if (IS_DIGIT(*ptr)) minor += *ptr++ - CHAR_0; 
+           if (ptr >= ptrend || *ptr != CHAR_RIGHT_PARENTHESIS)
+             goto BAD_VERSION_CONDITION;
+           }
+diff --git a/testdata/testinput2 b/testdata/testinput2
+index cc4b59b..9b207ef 100644
+--- a/testdata/testinput2
++++ b/testdata/testinput2
+@@ -4007,6 +4007,9 @@
+ /(?(VERSION>=10.0)yes|no)/I
+     yesno
+ 
++/(?(VERSION>=10.04)yes|no)/
++    yesno
++
+ /(?(VERSION=8)yes){3}/BI,aftertext
+     yesno
+ 
+diff --git a/testdata/testoutput2 b/testdata/testoutput2
+index aab0c94..124a8b6 100644
+--- a/testdata/testoutput2
++++ b/testdata/testoutput2
+@@ -13483,6 +13483,10 @@ Subject length lower bound = 2
+     yesno
+  0: yes
+ 
++/(?(VERSION>=10.04)yes|no)/
++    yesno
++ 0: yes
++
+ /(?(VERSION=8)yes){3}/BI,aftertext
+ ------------------------------------------------------------------
+         Bra
+@@ -13537,7 +13541,7 @@ Failed: error 179 at offset 11: syntax error or number too big in (?(VERSION con
+ Failed: error 179 at offset 16: syntax error or number too big in (?(VERSION condition
+ 
+ /(?(VERSION=10.101)yes|no)/
+-Failed: error 179 at offset 17: syntax error or number too big in (?(VERSION condition
++Failed: error 179 at offset 16: syntax error or number too big in (?(VERSION condition
+ 
+ /abcd/I
+ Capturing subpattern count = 0
+-- 
+2.14.4
+

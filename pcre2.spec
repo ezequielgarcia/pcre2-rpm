@@ -79,6 +79,8 @@ Patch9:     pcre2-10.31-Fix-global-search-replace-in-pcre2test-and-pcre2_sub.pat
 # lookbehind assertion is used inside a lookahead assertion,
 # in upstream after 10.31
 Patch10:    pcre2-10.31-Ignore-qualifiers-on-lookaheads-within-lookbehinds-w.patch
+# Fix parsing VERSION conditions, in upstream after pcre-10.31
+Patch11:    pcre2-10.31-Fix-bug-in-VERSION-number-reading.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -165,6 +167,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -270,6 +273,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Mon Jul 09 2018 Petr Pisar <ppisar@redhat.com> - 10.31-7
 - Fix checking that a lookbehind assertion has a fixed length if the
   lookbehind assertion is used inside a lookahead assertion
+- Fix parsing VERSION conditions
 
 * Mon Jul 02 2018 Petr Pisar <ppisar@redhat.com> - 10.31-6
 - Fix global search/replace in pcre2test and pcre2_substitute() when the pattern
