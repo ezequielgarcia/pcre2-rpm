@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -75,6 +75,10 @@ Patch8:     pcre2-10.31-Fix-bug-when-K-is-used-in-a-lookbehind-in-a-substitu.pat
 # matches an empty string, but never at the starting offset,
 # in upstream after 10.31
 Patch9:     pcre2-10.31-Fix-global-search-replace-in-pcre2test-and-pcre2_sub.patch
+# Fix checking that a lookbehind assertion has a fixed length if the
+# lookbehind assertion is used inside a lookahead assertion,
+# in upstream after 10.31
+Patch10:    pcre2-10.31-Ignore-qualifiers-on-lookaheads-within-lookbehinds-w.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -160,6 +164,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -262,6 +267,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jul 09 2018 Petr Pisar <ppisar@redhat.com> - 10.31-7
+- Fix checking that a lookbehind assertion has a fixed length if the
+  lookbehind assertion is used inside a lookahead assertion
+
 * Mon Jul 02 2018 Petr Pisar <ppisar@redhat.com> - 10.31-6
 - Fix global search/replace in pcre2test and pcre2_substitute() when the pattern
   matches an empty string, but never at the starting offset
