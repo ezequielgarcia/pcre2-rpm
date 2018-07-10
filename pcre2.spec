@@ -23,12 +23,13 @@ Summary:    Perl-compatible regular expression library
 #Not distributed in any binary package
 # aclocal.m4:                           FSFULLR and GPLv2+ with exception
 # ar-lib:                               GPLv2+ with exception
-# autotools:                            GPLv3+ with exception
 # cmake/COPYING-CMAKE-SCRIPTS:          BSD
 # compile:                              GPLv2+ with exception
+# config.guess:                         GPLv3+ with exception
 # config.sub:                           GPLv3+ with exception
 # configure:                            FSFUL and GPLv2+ with exception
 # depcomp:                              GPLv2+ with exception
+# INSTALL:                              FSFAP
 # install-sh:                           MIT
 # ltmain.sh:                            GPLv2+ with exception and (MIT or GPLv3+)
 # m4/ax_pthread.m4:                     GPLv3+ with exception
