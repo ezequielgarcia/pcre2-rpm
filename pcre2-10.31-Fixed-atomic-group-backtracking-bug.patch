@@ -1,0 +1,67 @@
+From bba8a81a820ffcfc9c88adb0055e12bad66eee4e Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 16 Jul 2018 15:24:32 +0000
+Subject: [PATCH] Fixed atomic group backtracking bug.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@965 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 8.31.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2_match.c    | 2 +-
+ testdata/testinput1  | 6 ++++++
+ testdata/testoutput1 | 8 ++++++++
+ 3 files changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/src/pcre2_match.c b/src/pcre2_match.c
+index ce96016..c294049 100644
+--- a/src/pcre2_match.c
++++ b/src/pcre2_match.c
+@@ -5509,7 +5509,7 @@ fprintf(stderr, "++ op=%d\n", *Fecode);
+       frame so that it points to the final branch. */
+ 
+       case OP_ONCE:
+-      Fback_frame = ((char *)F - (char *)P) + frame_size;
++      Fback_frame = ((char *)F - (char *)P);
+       for (;;)
+         {
+         uint32_t y = GET(P->ecode,1);
+diff --git a/testdata/testinput1 b/testdata/testinput1
+index 1b3191c..cc11288 100644
+--- a/testdata/testinput1
++++ b/testdata/testinput1
+@@ -6202,4 +6202,10 @@ ef) x/x,mark
+ 
+ /(?<=(?=.){4,5}x)/
+ 
++/(?>a(*:1))(?>b(*:1))(*SKIP:1)x|.*/no_start_optimize
++    abc
++
++/(?>a(*:1))(?>b)(*SKIP:1)x|.*/no_start_optimize
++    abc
++
+ # End of testinput1 
+diff --git a/testdata/testoutput1 b/testdata/testoutput1
+index 06469fa..2fd2d48 100644
+--- a/testdata/testoutput1
++++ b/testdata/testoutput1
+@@ -9841,4 +9841,12 @@ No match
+ 
+ /(?<=(?=.){4,5}x)/
+ 
++/(?>a(*:1))(?>b(*:1))(*SKIP:1)x|.*/no_start_optimize
++    abc
++ 0: abc
++
++/(?>a(*:1))(?>b)(*SKIP:1)x|.*/no_start_optimize
++    abc
++ 0: abc
++
+ # End of testinput1 
+-- 
+2.14.4
+
