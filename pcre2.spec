@@ -88,6 +88,8 @@ Patch12:    pcre2-10.31-Fixed-atomic-group-backtracking-bug.patch
 # Recognize all Unicode space characters with /x option in a pattern,
 # in upstream after 10.31
 Patch13:    pcre2-10.31-Make-x-more-Perl-compatible-by-recognizing-all-of-Un.patch
+# Fix changing dynamic options, in upstream after 10.31
+Patch14:    pcre2-10.31-Fix-dynamic-options-changing-bug.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -177,6 +179,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch11 -p1
 %patch12 -p1
 %patch13 -p1
+%patch14 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -281,6 +284,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Thu Aug 16 2018 Petr Pisar <ppisar@redhat.com> - 10.31-9
 - Recognize all Unicode space characters with /x option in a pattern
+- Fix changing dynamic options
 
 * Tue Jul 31 2018 Petr Pisar <ppisar@redhat.com> - 10.31-8
 - Fix backtracking atomic groups when they are not separated by something with

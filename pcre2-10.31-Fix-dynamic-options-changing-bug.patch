@@ -1,0 +1,139 @@
+From 1247796cd3cffa4cfea368decfdbaf13b276bfe3 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sat, 4 Aug 2018 08:20:18 +0000
+Subject: [PATCH] Fix dynamic options changing bug.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@979 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 10.31.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2_compile.c  | 29 +++++++++++++++++------------
+ testdata/testinput1  |  5 +++++
+ testdata/testoutput1 |  8 ++++++++
+ 3 files changed, 30 insertions(+), 12 deletions(-)
+
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index 1d62a38..9898d06 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -2251,11 +2251,14 @@ typedef struct nest_save {
+ #define NSF_RESET          0x0001u
+ #define NSF_CONDASSERT     0x0002u
+ 
+-/* Of the options that are changeable within the pattern, these are tracked
+-during parsing. The rest are used from META_OPTIONS items when compiling. */
++/* Options that are changeable within the pattern must be tracked during
++parsing. Some (e.g. PCRE2_EXTENDED) are implemented entirely during parsing,
++but all must be tracked so that META_OPTIONS items set the correct values for
++the main compiling phase. */
+ 
+-#define PARSE_TRACKED_OPTIONS \
+-  (PCRE2_DUPNAMES|PCRE2_EXTENDED|PCRE2_EXTENDED_MORE|PCRE2_NO_AUTO_CAPTURE)
++#define PARSE_TRACKED_OPTIONS (PCRE2_CASELESS|PCRE2_DOTALL|PCRE2_DUPNAMES| \
++  PCRE2_EXTENDED|PCRE2_EXTENDED_MORE|PCRE2_MULTILINE|PCRE2_NO_AUTO_CAPTURE| \
++  PCRE2_UNGREEDY)
+ 
+ /* States used for analyzing ranges in character classes. The two OK values
+ must be last. */
+@@ -2434,16 +2437,16 @@ while (ptr < ptrend)
+         /* EITHER: not both options set */
+         ((options & (PCRE2_EXTENDED | PCRE2_ALT_VERBNAMES)) !=
+                     (PCRE2_EXTENDED | PCRE2_ALT_VERBNAMES)) ||
+-#ifdef SUPPORT_UNICODE                     
++#ifdef SUPPORT_UNICODE
+         /* OR: character > 255 AND not Unicode Pattern White Space */
+         (c > 255 && (c|1) != 0x200f && (c|1) != 0x2029) ||
+-#endif         
++#endif
+         /* OR: not a # comment or isspace() white space */
+         (c < 256 && c != CHAR_NUMBER_SIGN && (cb->ctypes[c] & ctype_space) == 0
+ #ifdef SUPPORT_UNICODE
+         /* and not CHAR_NEL when Unicode is supported */
+           && c != CHAR_NEL
+-#endif                     
++#endif
+        )))
+     {
+     PCRE2_SIZE verbnamelength;
+@@ -2518,16 +2521,16 @@ while (ptr < ptrend)
+   character, not a code unit, so we must not use MAX_255 to test its size
+   because MAX_255 tests code units and is assumed TRUE in 8-bit mode. The
+   whitespace characters are those designated as "Pattern White Space" by
+-  Unicode, which are the isspace() characters plus CHAR_NEL (newline), which is 
+-  U+0085 in Unicode, plus U+200E, U+200F, U+2028, and U+2029. These are a 
++  Unicode, which are the isspace() characters plus CHAR_NEL (newline), which is
++  U+0085 in Unicode, plus U+200E, U+200F, U+2028, and U+2029. These are a
+   subset of space characters that match \h and \v. */
+ 
+   if ((options & PCRE2_EXTENDED) != 0)
+     {
+     if (c < 256 && (cb->ctypes[c] & ctype_space) != 0) continue;
+-#ifdef SUPPORT_UNICODE     
++#ifdef SUPPORT_UNICODE
+     if (c == CHAR_NEL || (c|1) == 0x200f || (c|1) == 0x2029) continue;
+-#endif     
++#endif
+     if (c == CHAR_NUMBER_SIGN)
+       {
+       while (ptr < ptrend)
+@@ -3534,6 +3537,8 @@ while (ptr < ptrend)
+ 
+       else
+         {
++        uint32_t oldoptions = options; 
++
+         top_nest->reset_group = 0;
+         top_nest->max_group = 0;
+         set = unset = 0;
+@@ -3604,7 +3609,7 @@ while (ptr < ptrend)
+ 
+         /* If nothing changed, no need to record. */
+ 
+-        if (set != 0 || unset != 0)
++        if (options != oldoptions)
+           {
+           *parsed_pattern++ = META_OPTIONS;
+           *parsed_pattern++ = options;
+diff --git a/testdata/testinput1 b/testdata/testinput1
+index cc11288..5b9c4df 100644
+--- a/testdata/testinput1
++++ b/testdata/testinput1
+@@ -2184,6 +2184,11 @@
+     Blah blah      
+     blaH blah 
+ 
++/((?i)blah)\s+(?m)A(?i:\1)/
++    blah ABLAH
++\= Expect no match
++    blah aBLAH
++
+ /(?>a*)*/
+     a
+     aa
+diff --git a/testdata/testoutput1 b/testdata/testoutput1
+index 2fd2d48..f58076f 100644
+--- a/testdata/testoutput1
++++ b/testdata/testoutput1
+@@ -3346,6 +3346,14 @@ No match
+  0: blaH blah
+  1: blaH
+ 
++/((?i)blah)\s+(?m)A(?i:\1)/
++    blah ABLAH
++ 0: blah ABLAH
++ 1: blah
++\= Expect no match
++    blah aBLAH
++No match
++
+ /(?>a*)*/
+     a
+  0: a
+-- 
+2.14.4
+
