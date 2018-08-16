@@ -6,10 +6,10 @@
 %bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.31
-Release:    %{?rcversion:0.}9%{?rcversion:.%rcversion}%{?dist}
+Version:    10.32
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -49,47 +49,6 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Fix returning unset groups in POSIX interface if REG_STARTEND has a non-zero
-# starting offset, upstream bug #2244, in upstream after 10.31
-Patch1:     pcre2-10.31-Fix-the-value-passed-back-for-POSIX-unset-groups-whe.patch
-# 1/2 Fix pcre2test -C to correctly show what \R matches,
-# in upstream after 10.31
-Patch2:     pcre2-10.31-Fix-pcre2test-C-to-correctly-show-what-R-matches.patch
-# 2/2 Fix pcre2test -C to correctly show what \R matches,
-# in upstream after 10.31
-Patch3:     pcre2-10.31-Oops-forgot-about-C-bsr-in-previous-patch.patch
-# Fix matching repeated character classes against an 8-bit string containting
-# multi-code-unit characters, in upstream after 10.31
-Patch4:     pcre2-10.31-Fix-C-bug-with-repeated-character-classes-in-UTF-8-m.patch
-# Add support to pcre2grep for binary zeros in -f files, upstream bug #2222,
-# in upstream after 10.31
-Patch5:     pcre2-10.31-Add-support-to-pcre2grep-for-binary-zeros-in-f-files.patch
-# Fix compiler warnings in pcre2grep, in upstream after 10.31
-Patch6:     pcre2-10.31-A-small-fix-to-pcre2grep-to-avoid-compiler-warnings-.patch
-# Fix setting error offset zero for early errors in pcre2_pattern_convert(),
-# in upstream after 10.31
-Patch7:     pcre2-10.31-Set-error-offset-zero-for-early-errors-in-pcre2_patt.patch
-# Fix bug when \K is used in a lookbehind in a substitute pattern,
-# in upstream after 10.31
-Patch8:     pcre2-10.31-Fix-bug-when-K-is-used-in-a-lookbehind-in-a-substitu.patch
-# Fix global search/replace in pcre2test and pcre2_substitute() when the pattern
-# matches an empty string, but never at the starting offset,
-# in upstream after 10.31
-Patch9:     pcre2-10.31-Fix-global-search-replace-in-pcre2test-and-pcre2_sub.patch
-# Fix checking that a lookbehind assertion has a fixed length if the
-# lookbehind assertion is used inside a lookahead assertion,
-# in upstream after 10.31
-Patch10:    pcre2-10.31-Ignore-qualifiers-on-lookaheads-within-lookbehinds-w.patch
-# Fix parsing VERSION conditions, in upstream after pcre-10.31
-Patch11:    pcre2-10.31-Fix-bug-in-VERSION-number-reading.patch
-# Fix backtracking atomic groups when they are not separated by something with
-# a backtracking point, in upstream after 10.31
-Patch12:    pcre2-10.31-Fixed-atomic-group-backtracking-bug.patch
-# Recognize all Unicode space characters with /x option in a pattern,
-# in upstream after 10.31
-Patch13:    pcre2-10.31-Make-x-more-Perl-compatible-by-recognizing-all-of-Un.patch
-# Fix changing dynamic options, in upstream after 10.31
-Patch14:    pcre2-10.31-Fix-dynamic-options-changing-bug.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -166,20 +125,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -282,6 +227,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Aug 16 2018 Petr Pisar <ppisar@redhat.com> - 10.32-0.1.RC1
+- 10.32-RC1 bump
+
 * Thu Aug 16 2018 Petr Pisar <ppisar@redhat.com> - 10.31-9
 - Recognize all Unicode space characters with /x option in a pattern
 - Fix changing dynamic options
