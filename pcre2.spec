@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.31
-Release:    %{?rcversion:0.}8%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}9%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -85,6 +85,9 @@ Patch11:    pcre2-10.31-Fix-bug-in-VERSION-number-reading.patch
 # Fix backtracking atomic groups when they are not separated by something with
 # a backtracking point, in upstream after 10.31
 Patch12:    pcre2-10.31-Fixed-atomic-group-backtracking-bug.patch
+# Recognize all Unicode space characters with /x option in a pattern,
+# in upstream after 10.31
+Patch13:    pcre2-10.31-Make-x-more-Perl-compatible-by-recognizing-all-of-Un.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -173,6 +176,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
+%patch13 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -275,6 +279,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Aug 16 2018 Petr Pisar <ppisar@redhat.com> - 10.31-9
+- Recognize all Unicode space characters with /x option in a pattern
+
 * Tue Jul 31 2018 Petr Pisar <ppisar@redhat.com> - 10.31-8
 - Fix backtracking atomic groups when they are not separated by something with
   a backtracking point

@@ -1,0 +1,174 @@
+From 71340653cd375c01ada053c63d7c55d0ca475b47 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Fri, 3 Aug 2018 09:38:36 +0000
+Subject: [PATCH] Make /x more Perl-compatible by recognizing all of Unicode's
+ "Pattern White Space" characters, not just the ASCII ones.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@977 6239d852-aaf2-0410-a92c-79f79f948069
+
+Petr Písař: Ported to 10.31.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2_compile.c  | 25 +++++++++++++++++++------
+ testdata/testinput4  | 15 +++++++++++++++
+ testdata/testinput5  | 13 +++++++++++++
+ testdata/testoutput4 | 18 ++++++++++++++++++
+ testdata/testoutput5 | 16 ++++++++++++++++
+ 5 files changed, 81 insertions(+), 6 deletions(-)
+
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index 7ff8b4c..1d62a38 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -2434,11 +2434,17 @@ while (ptr < ptrend)
+         /* EITHER: not both options set */
+         ((options & (PCRE2_EXTENDED | PCRE2_ALT_VERBNAMES)) !=
+                     (PCRE2_EXTENDED | PCRE2_ALT_VERBNAMES)) ||
+-        /* OR: character > 255 */
+-        c > 255 ||
+-        /* OR: not a # comment or white space */
+-        (c != CHAR_NUMBER_SIGN && (cb->ctypes[c] & ctype_space) == 0)
+-       ))
++#ifdef SUPPORT_UNICODE                     
++        /* OR: character > 255 AND not Unicode Pattern White Space */
++        (c > 255 && (c|1) != 0x200f && (c|1) != 0x2029) ||
++#endif         
++        /* OR: not a # comment or isspace() white space */
++        (c < 256 && c != CHAR_NUMBER_SIGN && (cb->ctypes[c] & ctype_space) == 0
++#ifdef SUPPORT_UNICODE
++        /* and not CHAR_NEL when Unicode is supported */
++          && c != CHAR_NEL
++#endif                     
++       )))
+     {
+     PCRE2_SIZE verbnamelength;
+ 
+@@ -2510,11 +2516,18 @@ while (ptr < ptrend)
+ 
+   /* Skip over whitespace and # comments in extended mode. Note that c is a
+   character, not a code unit, so we must not use MAX_255 to test its size
+-  because MAX_255 tests code units and is assumed TRUE in 8-bit mode. */
++  because MAX_255 tests code units and is assumed TRUE in 8-bit mode. The
++  whitespace characters are those designated as "Pattern White Space" by
++  Unicode, which are the isspace() characters plus CHAR_NEL (newline), which is 
++  U+0085 in Unicode, plus U+200E, U+200F, U+2028, and U+2029. These are a 
++  subset of space characters that match \h and \v. */
+ 
+   if ((options & PCRE2_EXTENDED) != 0)
+     {
+     if (c < 256 && (cb->ctypes[c] & ctype_space) != 0) continue;
++#ifdef SUPPORT_UNICODE     
++    if (c == CHAR_NEL || (c|1) == 0x200f || (c|1) == 0x2029) continue;
++#endif     
+     if (c == CHAR_NUMBER_SIGN)
+       {
+       while (ptr < ptrend)
+diff --git a/testdata/testinput4 b/testdata/testinput4
+index 0ef7b8e..6884f60 100644
+--- a/testdata/testinput4
++++ b/testdata/testinput4
+@@ -2300,5 +2300,20 @@
+     \x{123}\x{122}\x{123}
+ \= Expect no match     
+     \x{123}\x{124}\x{123}
++    
++# Test the full list of Unicode "Pattern White Space" characters that are to
++# be ignored by /x. The pattern lines below may show up oddly in text editors
++# or when listed to the screen. Note that characters such as U+2002, which are
++# matched as space by \h and \v are *not* "Pattern White Space".
++
++/A‎‏  B/x,utf
++    AB
++
++/A B/x,utf
++    A\x{2002}B
++\= Expect no match
++    AB
++    
++# ------- 
+ 
+ # End of testinput4
+diff --git a/testdata/testinput5 b/testdata/testinput5
+index 0366136..ebeee07 100644
+--- a/testdata/testinput5
++++ b/testdata/testinput5
+@@ -2059,5 +2059,18 @@
+     \x{1F1E6}\x{1F1E7}\x{1F1E7}B
+     \x{1F1E6}\x{1F1E7}\x{1F1E7}\x{1F1E6}B
+ 
++# This tests the non-UTF Unicode NEL pattern whitespace character, only
++# recognized by PCRE2 with /x when there is Unicode support.
++
++/A      
++?B/x
++    AB 
++    
++# This tests Unicode Pattern White Space characters in verb names when they
++# are being processed with PCRE2_EXTENDED. Note: there are UTF-8 characters
++# with code points greater than 255 between A, B, and C in the pattern.
++
++/(*: A‎B C)abc/x,utf,mark,alt_verbnames
++    abc
+ 
+ # End of testinput5
+diff --git a/testdata/testoutput4 b/testdata/testoutput4
+index 6056e6d..51c8219 100644
+--- a/testdata/testoutput4
++++ b/testdata/testoutput4
+@@ -3728,5 +3728,23 @@ No match
+ \= Expect no match     
+     \x{123}\x{124}\x{123}
+ No match
++    
++# Test the full list of Unicode "Pattern White Space" characters that are to
++# be ignored by /x. The pattern lines below may show up oddly in text editors
++# or when listed to the screen. Note that characters such as U+2002, which are
++# matched as space by \h and \v are *not* "Pattern White Space".
++
++/A‎‏  B/x,utf
++    AB
++ 0: AB
++
++/A B/x,utf
++    A\x{2002}B
++ 0: A\x{2002}B
++\= Expect no match
++    AB
++No match
++    
++# ------- 
+ 
+ # End of testinput4
+diff --git a/testdata/testoutput5 b/testdata/testoutput5
+index 4b3171c..1392e98 100644
+--- a/testdata/testoutput5
++++ b/testdata/testoutput5
+@@ -4700,5 +4700,21 @@ Callout 0: last capture = 1
+  1: \x{1f1e6}\x{1f1e7}
+  2: \x{1f1e7}\x{1f1e6}
+ 
++# This tests the non-UTF Unicode NEL pattern whitespace character, only
++# recognized by PCRE2 with /x when there is Unicode support.
++
++/A      
++?B/x
++    AB 
++ 0: AB
++    
++# This tests Unicode Pattern White Space characters in verb names when they
++# are being processed with PCRE2_EXTENDED. Note: there are UTF-8 characters
++# with code points greater than 255 between A, B, and C in the pattern.
++
++/(*: A‎B C)abc/x,utf,mark,alt_verbnames
++    abc
++ 0: abc
++MK: ABC
+ 
+ # End of testinput5
+-- 
+2.14.4
+
