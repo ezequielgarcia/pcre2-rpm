@@ -50,7 +50,7 @@ Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:T
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
 # Fix autopossessifying a repeated negative class with no characters less than
-# 256 that is followed by a positive class with only characters less than 255,
+# 256 that is followed by a positive class with only characters less than 256,
 # upstream bug #2300, in upstream after 10.32-RC1
 Patch1:     pcre-10.32-RC1-Fix-bad-auto-possessification-of-certain-types-of-cl.patch
 BuildRequires:  autoconf
@@ -234,7 +234,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Mon Aug 20 2018 Petr Pisar <ppisar@redhat.com> - 10.32-0.2.RC1
 - Fix autopossessifying a repeated negative class with no characters less than
-  256 that is followed by a positive class with only characters less than 255,
+  256 that is followed by a positive class with only characters less than 256,
   (upstream bug #2300)
 
 * Thu Aug 16 2018 Petr Pisar <ppisar@redhat.com> - 10.32-0.1.RC1
