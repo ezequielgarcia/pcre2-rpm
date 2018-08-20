@@ -1,0 +1,79 @@
+From 6f2408cec76565406fb17f2cd51e88f92d8dc0b3 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Fri, 17 Aug 2018 14:45:35 +0000
+Subject: [PATCH] Fix bad auto-possessification of certain types of class.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@986 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.32-RC1.
+---
+ src/pcre2_auto_possess.c |  4 ++--
+ testdata/testinput4      |  9 +++++++++
+ testdata/testoutput4     | 12 ++++++++++++
+
+diff --git a/src/pcre2_auto_possess.c b/src/pcre2_auto_possess.c
+index 82a43ae..2ce152e 100644
+--- a/src/pcre2_auto_possess.c
++++ b/src/pcre2_auto_possess.c
+@@ -505,7 +505,7 @@ Arguments:
+   utf         TRUE in UTF mode
+   cb          compile data block
+   base_list   the data list of the base opcode
+-  base_end    the end of the data list
++  base_end    the end of the base opcode
+   rec_limit   points to recursion depth counter
+ 
+ Returns:      TRUE if the auto-possessification is possible
+@@ -730,7 +730,7 @@ for(;;)
+       if ((*xclass_flags & XCL_MAP) == 0)
+         {
+         /* No bits are set for characters < 256. */
+-        if (list[1] == 0) return TRUE;
++        if (list[1] == 0) return (*xclass_flags & XCL_NOT) == 0;
+         /* Might be an empty repeat. */
+         continue;
+         }
+diff --git a/testdata/testinput4 b/testdata/testinput4
+index 3efb1ff..a27b6af 100644
+--- a/testdata/testinput4
++++ b/testdata/testinput4
+@@ -2309,4 +2309,13 @@
+     
+ # ------- 
+ 
++/[^\x{100}-\x{ffff}]*[\x80-\xff]/utf
++    \x{99}\x{99}\x{99}
++
++/[^\x{100}-\x{ffff}ABC]*[\x80-\xff]/utf
++    \x{99}\x{99}\x{99}
++
++/[^\x{100}-\x{ffff}]*[\x80-\xff]/i,utf
++    \x{99}\x{99}\x{99}
++
+ # End of testinput4
+diff --git a/testdata/testoutput4 b/testdata/testoutput4
+index db474ef..ba3df37 100644
+--- a/testdata/testoutput4
++++ b/testdata/testoutput4
+@@ -3730,4 +3730,16 @@ No match
+     
+ # ------- 
+ 
++/[^\x{100}-\x{ffff}]*[\x80-\xff]/utf
++    \x{99}\x{99}\x{99}
++ 0: \x{99}\x{99}\x{99}
++
++/[^\x{100}-\x{ffff}ABC]*[\x80-\xff]/utf
++    \x{99}\x{99}\x{99}
++ 0: \x{99}\x{99}\x{99}
++
++/[^\x{100}-\x{ffff}]*[\x80-\xff]/i,utf
++    \x{99}\x{99}\x{99}
++ 0: \x{99}\x{99}\x{99}
++
+ # End of testinput4
+-- 
+2.14.4
+
