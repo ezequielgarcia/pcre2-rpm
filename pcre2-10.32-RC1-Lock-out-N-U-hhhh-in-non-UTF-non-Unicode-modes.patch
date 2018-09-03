@@ -1,0 +1,258 @@
+From 11ad23b7e6f2b3b81bc7e1e605e34416b5b900ff Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sun, 2 Sep 2018 16:03:27 +0000
+Subject: [PATCH] Lock out \N{U+hhhh} in non-UTF (non-Unicode) modes.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@994 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ ChangeLog            |  2 +-
+ doc/pcre2api.3       |  5 +++--
+ doc/pcre2pattern.3   | 16 +++++++++-------
+ doc/pcre2syntax.3    |  6 +++---
+ doc/pcre2unicode.3   | 13 +++++++++----
+ src/pcre2.h.in       |  2 +-
+ src/pcre2_compile.c  | 14 ++++++++++----
+ src/pcre2_error.c    |  2 +-
+ testdata/testinput5  |  2 ++
+ testdata/testoutput5 |  3 +++
+ 10 files changed, 42 insertions(+), 23 deletions(-)
+
+diff --git a/ChangeLog b/ChangeLog
+index 264bfae..4b55639 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -130,7 +130,7 @@ present.
+ 28. A (*MARK) name was not being passed back for positive assertions that were
+ terminated by (*ACCEPT).
+ 
+-29. Add support for \N{U+dddd}, but not in EBCDIC environments.
++29. Add support for \N{U+dddd}, but only in Unicode mode.
+ 
+ 30. Add support for (?^) for unsetting all imnsx options.
+ 
+diff --git a/doc/pcre2api.3 b/doc/pcre2api.3
+index 5a97739..fff4fcc 100644
+--- a/doc/pcre2api.3
++++ b/doc/pcre2api.3
+@@ -1,4 +1,4 @@
+-.TH PCRE2API 3 "03 August 2018" "PCRE2 10.32"
++.TH PCRE2API 3 "02 September 2018" "PCRE2 10.32"
+ .SH NAME
+ PCRE2 - Perl-compatible regular expressions (revised API)
+ .sp
+@@ -1756,7 +1756,8 @@ behaviour of PCRE2 are given in the
+ .\" HREF
+ \fBpcre2unicode\fP
+ .\"
+-page.
++page. In particular, note that it changes the way PCRE2_CASELESS handles 
++characters with code points greater than 127.
+ .
+ .
+ .\" HTML <a name="extracompileoptions"></a>
+diff --git a/doc/pcre2pattern.3 b/doc/pcre2pattern.3
+index aa0d652..fd086b4 100644
+--- a/doc/pcre2pattern.3
++++ b/doc/pcre2pattern.3
+@@ -1,4 +1,4 @@
+-.TH PCRE2PATTERN 3 "03 August 2018" "PCRE2 10.32"
++.TH PCRE2PATTERN 3 "02 September 2018" "PCRE2 10.32"
+ .SH NAME
+ PCRE2 - Perl-compatible regular expressions (revised API)
+ .SH "PCRE2 REGULAR EXPRESSION DETAILS"
+@@ -376,14 +376,15 @@ these escapes are as follows:
+   \eddd        character with octal code ddd, or backreference
+   \eo{ddd..}   character with octal code ddd..
+   \exhh        character with hex code hh
+-  \ex{hhh..}   character with hex code hhh.. (default mode)
+-  \eN{U+hhh..} character with Unicode code point hhh..
++  \ex{hhh..}   character with hex code hhh..
++  \eN{U+hhh..} character with Unicode hex code point hhh..
+   \euhhhh      character with hex code hhhh (when PCRE2_ALT_BSUX is set)
+ .sp
++The \eN{U+hhh..} escape sequence is recognized only when the PCRE2_UTF option
++is set, that is, when PCRE2 is operating in a Unicode mode. Perl also uses
++\eN{name} to specify characters by Unicode name; PCRE2 does not support this.
+ Note that when \eN is not followed by an opening brace (curly bracket) it has
+ an entirely different meaning, matching any character that is not a newline.
+-Perl also uses \eN{name} to specify characters by Unicode name; PCRE2 does not
+-support this.
+ .P
+ The precise effect of \ecx on ASCII characters is as follows: if x is a lower
+ case letter, it is converted to upper case. Then bit 6 of the character (hex
+@@ -509,7 +510,8 @@ limited to certain values, as follows:
+ Invalid Unicode code points are all those in the range 0xd800 to 0xdfff (the
+ so-called "surrogate" code points). The check for these can be disabled by the
+ caller of \fBpcre2_compile()\fP by setting the option
+-PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES.
++PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES. However, this is possible only in UTF-8
++and UTF-32 modes, because these values are not representable in UTF-16.
+ .
+ .
+ .SS "Escape sequences in character classes"
+@@ -3650,6 +3652,6 @@ Cambridge, England.
+ .rs
+ .sp
+ .nf
+-Last updated: 03 August 2018
++Last updated: 02 September 2018
+ Copyright (c) 1997-2018 University of Cambridge.
+ .fi
+diff --git a/doc/pcre2syntax.3 b/doc/pcre2syntax.3
+index e5ace25..c392bfb 100644
+--- a/doc/pcre2syntax.3
++++ b/doc/pcre2syntax.3
+@@ -1,4 +1,4 @@
+-.TH PCRE2SYNTAX 3 "01 August 2018" "PCRE2 10.32"
++.TH PCRE2SYNTAX 3 "02 September 2018" "PCRE2 10.32"
+ .SH NAME
+ PCRE2 - Perl-compatible regular expressions (revised API)
+ .SH "PCRE2 REGULAR EXPRESSION SYNTAX SUMMARY"
+@@ -35,7 +35,7 @@ This table applies to ASCII and Unicode environments.
+   \eddd       character with octal code ddd, or backreference
+   \eo{ddd..}  character with octal code ddd..
+   \eU         "U" if PCRE2_ALT_BSUX is set (otherwise is an error)
+-  \eN{U+hh..} character with Unicode code point hh..
++  \eN{U+hh..} character with Unicode code point hh.. (Unicode mode only)
+   \euhhhh     character with hex code hhhh (if PCRE2_ALT_BSUX is set)
+   \exhh       character with hex code hh
+   \ex{hh..}   character with hex code hh..
+@@ -621,6 +621,6 @@ Cambridge, England.
+ .rs
+ .sp
+ .nf
+-Last updated: 01 August 2018
++Last updated: 02 September 2018
+ Copyright (c) 1997-2018 University of Cambridge.
+ .fi
+diff --git a/doc/pcre2unicode.3 b/doc/pcre2unicode.3
+index fdaddc4..edd8dcd 100644
+--- a/doc/pcre2unicode.3
++++ b/doc/pcre2unicode.3
+@@ -1,4 +1,4 @@
+-.TH PCRE2UNICODE 3 "17 May 2017" "PCRE2 10.30"
++.TH PCRE2UNICODE 3 "02 September 2018" "PCRE2 10.32"
+ .SH NAME
+ PCRE - Perl-compatible regular expressions (revised API)
+ .SH "UNICODE AND UTF SUPPORT"
+@@ -16,7 +16,8 @@ you must call
+ with the PCRE2_UTF option flag, or the pattern must start with the sequence
+ (*UTF). When either of these is the case, both the pattern and any subject
+ strings that are matched against it are treated as UTF strings instead of
+-strings of individual one-code-unit characters.
++strings of individual one-code-unit characters. There are also some other
++changes to the way characters are handled, as documented below.
+ .P
+ If you do not need Unicode support you can build PCRE2 without it, in which
+ case the library will be smaller.
+@@ -51,6 +52,10 @@ unbraced hexadecimal escape sequences (for example, \ex{b3} or \exb3). Larger
+ values have to use braced sequences. Unbraced octal code points up to \e777 are
+ also recognized; larger ones can be coded using \eo{...}.
+ .P
++The escape sequence \eN{U+<hex digits>} is recognized as another way of
++specifying a Unicode character by code point in a UTF mode. It is not allowed 
++in non-UTF modes.
++.P
+ In UTF modes, repeat quantifiers apply to complete UTF characters, not to
+ individual code units.
+ .P
+@@ -280,6 +285,6 @@ Cambridge, England.
+ .rs
+ .sp
+ .nf
+-Last updated: 17 May 2017
+-Copyright (c) 1997-2017 University of Cambridge.
++Last updated: 02 September 2018
++Copyright (c) 1997-2018 University of Cambridge.
+ .fi
+diff --git a/src/pcre2.h.in b/src/pcre2.h.in
+index 4c7c674..a9396e0 100644
+--- a/src/pcre2.h.in
++++ b/src/pcre2.h.in
+@@ -316,7 +316,7 @@ pcre2_pattern_convert(). */
+ #define PCRE2_ERROR_INTERNAL_BAD_CODE_IN_SKIP      190
+ #define PCRE2_ERROR_NO_SURROGATES_IN_UTF16         191
+ #define PCRE2_ERROR_BAD_LITERAL_OPTIONS            192
+-#define PCRE2_ERROR_NOT_SUPPORTED_IN_EBCDIC        193
++#define PCRE2_ERROR_SUPPORTED_ONLY_IN_UNICODE      193
+ #define PCRE2_ERROR_INVALID_HYPHEN_IN_OPTIONS      194
+ 
+ 
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index 8c30064..f6a7e99 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -1454,16 +1454,22 @@ else if ((i = escapes[c - ESCAPES_FIRST]) != 0)
+       /* \N{U+ can be handled by the \x{ code. However, this construction is
+       not valid in EBCDIC environments because it specifies a Unicode
+       character, not a codepoint in the local code. For example \N{U+0041}
+-      must be "A" in all environments. */
++      must be "A" in all environments. Also, in Perl, \N{U+ forces Unicode 
++      casing semantics for the entire pattern, so allow it only in UTF (i.e. 
++      Unicode) mode. */
+ 
+       if (ptrend - p > 1 && *p == CHAR_U && p[1] == CHAR_PLUS)
+         {
+ #ifdef EBCDIC
+         *errorcodeptr = ERR93;
+ #else
+-        ptr = p + 1;
+-        escape = 0;   /* Not a fancy escape after all */
+-        goto COME_FROM_NU;
++        if (utf)
++          { 
++          ptr = p + 1;
++          escape = 0;   /* Not a fancy escape after all */
++          goto COME_FROM_NU;
++          }
++        else *errorcodeptr = ERR93;   
+ #endif
+         }
+ 
+diff --git a/src/pcre2_error.c b/src/pcre2_error.c
+index 64ab5d9..4b3b3f1 100644
+--- a/src/pcre2_error.c
++++ b/src/pcre2_error.c
+@@ -179,7 +179,7 @@ static const unsigned char compile_error_texts[] =
+   "internal error: bad code value in parsed_skip()\0"
+   "PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES is not allowed in UTF-16 mode\0"
+   "invalid option bits with PCRE2_LITERAL\0"
+-  "\\N{U+dddd} is not supported in EBCDIC mode\0"
++  "\\N{U+dddd} is supported only in Unicode (UTF) mode\0"
+   "invalid hyphen in option setting\0"
+   ;
+ 
+diff --git a/testdata/testinput5 b/testdata/testinput5
+index e339808..687de32 100644
+--- a/testdata/testinput5
++++ b/testdata/testinput5
+@@ -2089,6 +2089,8 @@
+ 
+ /\N{U+}/
+ 
++/\N{U+}/utf
++
+ /\N{U}/
+ 
+ # This tests the non-UTF Unicode NEL pattern whitespace character, only
+diff --git a/testdata/testoutput5 b/testdata/testoutput5
+index a9552f4..51caa18 100644
+--- a/testdata/testoutput5
++++ b/testdata/testoutput5
+@@ -4751,6 +4751,9 @@ No match
+  0: \x{1d1aa}
+ 
+ /\N{U+}/
++Failed: error 193 at offset 2: \N{U+dddd} is supported only in Unicode (UTF) mode
++
++/\N{U+}/utf
+ Failed: error 178 at offset 5: digits missing in \x{} or \o{} or \N{U+}
+ 
+ /\N{U}/
+-- 
+2.14.4
+
