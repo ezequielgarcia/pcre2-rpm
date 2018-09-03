@@ -56,6 +56,9 @@ Patch1:     pcre-10.32-RC1-Fix-bad-auto-possessification-of-certain-types-of-cl.
 # Accept \N{U+hhhh} only in UTF mode, upstream bug #2305,
 # in upstream after 10.32-RC1
 Patch2:     pcre2-10.32-RC1-Lock-out-N-U-hhhh-in-non-UTF-non-Unicode-modes.patch
+# Fix anchoring in conditionals with only one branch, upstream bug #2307,
+# in upstream after 10.32-RC1
+Patch3:     pcre2-10.32-RC1-Fix-anchoring-bug-in-conditionals-with-only-one-bran.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -134,6 +137,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -238,6 +242,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Mon Sep 03 2018 Petr Pisar <ppisar@redhat.com> - 10.32-0.3.RC1
 - Accept \N{U+hhhh} only in UTF mode (upstream bug #2305)
+- Fix anchoring in conditionals with only one branch (upstream bug #2307)
 
 * Mon Aug 20 2018 Petr Pisar <ppisar@redhat.com> - 10.32-0.2.RC1
 - Fix autopossessifying a repeated negative class with no characters less than

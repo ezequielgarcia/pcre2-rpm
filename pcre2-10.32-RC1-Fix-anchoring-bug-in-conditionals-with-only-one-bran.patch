@@ -1,0 +1,136 @@
+From c2d378421fedba48cb02b6b3dc4a74d2a24b2dd4 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Sun, 2 Sep 2018 16:53:29 +0000
+Subject: [PATCH] Fix anchoring bug in conditionals with only one branch.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@995 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.32-RC1.
+---
+ src/pcre2_compile.c  | 11 ++++++-----
+ testdata/testinput2  | 15 +++++++++++++++
+ testdata/testoutput2 | 40 ++++++++++++++++++++++++++++++++++++++++
+
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index f6a7e99..3df55e9 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -1454,8 +1454,8 @@ else if ((i = escapes[c - ESCAPES_FIRST]) != 0)
+       /* \N{U+ can be handled by the \x{ code. However, this construction is
+       not valid in EBCDIC environments because it specifies a Unicode
+       character, not a codepoint in the local code. For example \N{U+0041}
+-      must be "A" in all environments. Also, in Perl, \N{U+ forces Unicode 
+-      casing semantics for the entire pattern, so allow it only in UTF (i.e. 
++      must be "A" in all environments. Also, in Perl, \N{U+ forces Unicode
++      casing semantics for the entire pattern, so allow it only in UTF (i.e.
+       Unicode) mode. */
+ 
+       if (ptrend - p > 1 && *p == CHAR_U && p[1] == CHAR_PLUS)
+@@ -1464,12 +1464,12 @@ else if ((i = escapes[c - ESCAPES_FIRST]) != 0)
+         *errorcodeptr = ERR93;
+ #else
+         if (utf)
+-          { 
++          {
+           ptr = p + 1;
+           escape = 0;   /* Not a fancy escape after all */
+           goto COME_FROM_NU;
+           }
+-        else *errorcodeptr = ERR93;   
++        else *errorcodeptr = ERR93;
+ #endif
+         }
+ 
+@@ -7864,10 +7864,11 @@ do {
+      if (!is_anchored(scode, bracket_map, cb, atomcount, TRUE)) return FALSE;
+      }
+ 
+-   /* Condition */
++   /* Condition. If there is no second branch, it can't be anchored. */
+ 
+    else if (op == OP_COND)
+      {
++     if (scode[GET(scode,1)] != OP_ALT) return FALSE;
+      if (!is_anchored(scode, bracket_map, cb, atomcount, inassert))
+        return FALSE;
+      }
+diff --git a/testdata/testinput2 b/testdata/testinput2
+index 9b59b3e..c0f4292 100644
+--- a/testdata/testinput2
++++ b/testdata/testinput2
+@@ -5459,4 +5459,19 @@ a)"xI
+ 
+ /(?x-i-i)/
+ 
++/(?(?=^))b/I
++    abc
++
++/(?(?=^)|)b/I
++    abc
++
++/(?(?=^)|^)b/I
++    bbc
++\= Expect no match
++    abc     
++
++/(?(1)^|^())/I
++
++/(?(1)^())b/I
++
+ # End of testinput2
+diff --git a/testdata/testoutput2 b/testdata/testoutput2
+index d629771..6f0dd12 100644
+--- a/testdata/testoutput2
++++ b/testdata/testoutput2
+@@ -16631,6 +16631,46 @@ Failed: error 194 at offset 3: invalid hyphen in option setting
+ /(?x-i-i)/
+ Failed: error 194 at offset 5: invalid hyphen in option setting
+ 
++/(?(?=^))b/I
++Capturing subpattern count = 0
++Last code unit = 'b'
++Subject length lower bound = 1
++    abc
++ 0: b
++
++/(?(?=^)|)b/I
++Capturing subpattern count = 0
++First code unit = 'b'
++Subject length lower bound = 1
++    abc
++ 0: b
++
++/(?(?=^)|^)b/I
++Capturing subpattern count = 0
++Compile options: <none>
++Overall options: anchored
++First code unit = 'b'
++Subject length lower bound = 1
++    bbc
++ 0: b
++\= Expect no match
++    abc     
++No match
++
++/(?(1)^|^())/I
++Capturing subpattern count = 1
++Max back reference = 1
++May match empty string
++Compile options: <none>
++Overall options: anchored
++Subject length lower bound = 0
++
++/(?(1)^())b/I
++Capturing subpattern count = 1
++Max back reference = 1
++Last code unit = 'b'
++Subject length lower bound = 1
++
+ # End of testinput2
+ Error -70: PCRE2_ERROR_BADDATA (unknown error number)
+ Error -62: bad serialized data
+-- 
+2.14.4
+
