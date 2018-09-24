@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.32
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -53,6 +53,9 @@ Patch0:     pcre2-10.10-Fix-multilib.patch
 # a greater than 1 fixed quantifier, upstream bug #2320, in upstream after
 # 10.32
 Patch1:     pcre2-10.32-Fix-subject-buffer-overread-in-JIT.-Found-by-Yunho-K.patch
+# Fix caseless matching an extended class in JIT mode, upstream bug #2321,
+# in upstream after 10.32
+Patch2:     pcre2-10.32-Fix-an-xclass-matching-issue-in-JIT.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -130,6 +133,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -232,6 +236,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Sep 24 2018 Petr Pisar <ppisar@redhat.com> - 10.32-3
+- Fix caseless matching an extended class in JIT mode (upstream bug #2321)
+
 * Tue Sep 18 2018 Petr Pisar <ppisar@redhat.com> - 10.32-2
 - Fix a subject buffer overread in JIT when UTF is disabled and \X or \R has
   a greater than 1 fixed quantifier (upstream bug #2320)
