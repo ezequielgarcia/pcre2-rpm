@@ -166,7 +166,6 @@ autoreconf -vif
     --enable-pcre2-16 \
     --enable-pcre2-32 \
     --enable-pcre2grep-callout \
-    --enable-pcre2grep-jit \
     --disable-pcre2grep-libbz2 \
     --disable-pcre2grep-libz \
     --disable-pcre2test-libedit \
