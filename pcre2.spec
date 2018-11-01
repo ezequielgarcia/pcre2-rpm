@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.32
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -56,6 +56,9 @@ Patch1:     pcre2-10.32-Fix-subject-buffer-overread-in-JIT.-Found-by-Yunho-K.pat
 # Fix caseless matching an extended class in JIT mode, upstream bug #2321,
 # in upstream after 10.32
 Patch2:     pcre2-10.32-Fix-an-xclass-matching-issue-in-JIT.patch
+# Fix matching a zero-repeated subroutine call at a start of a pattern,
+# upstream bug #2332, in upstream after 10.32
+Patch3:     pcre2-10.32-Fix-zero-repeated-subroutine-call-at-start-of-patter.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -134,6 +137,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -235,6 +239,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Nov 01 2018 Petr Pisar <ppisar@redhat.com> - 10.32-4
+- Fix matching a zero-repeated subroutine call at a start of a pattern
+  (upstream bug #2332)
+
 * Mon Sep 24 2018 Petr Pisar <ppisar@redhat.com> - 10.32-3
 - Fix caseless matching an extended class in JIT mode (upstream bug #2321)
 
