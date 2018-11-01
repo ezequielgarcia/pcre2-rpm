@@ -59,6 +59,9 @@ Patch2:     pcre2-10.32-Fix-an-xclass-matching-issue-in-JIT.patch
 # Fix matching a zero-repeated subroutine call at a start of a pattern,
 # upstream bug #2332, in upstream after 10.32
 Patch3:     pcre2-10.32-Fix-zero-repeated-subroutine-call-at-start-of-patter.patch
+# Fix heap limit checking overflow in pcre2_dfa_match(), upstream bug #2334,
+# in upstream after 10.32
+Patch4:     pcre2-10.32-Fix-heap-limit-checking-overflow-bug-in-pcre2_dfa_ma.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -138,6 +141,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -242,6 +246,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Thu Nov 01 2018 Petr Pisar <ppisar@redhat.com> - 10.32-4
 - Fix matching a zero-repeated subroutine call at a start of a pattern
   (upstream bug #2332)
+- Fix heap limit checking overflow in pcre2_dfa_match() (upstream bug #2334)
 
 * Mon Sep 24 2018 Petr Pisar <ppisar@redhat.com> - 10.32-3
 - Fix caseless matching an extended class in JIT mode (upstream bug #2321)
