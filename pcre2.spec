@@ -64,6 +64,10 @@ Patch3:     pcre2-10.32-Fix-zero-repeated-subroutine-call-at-start-of-patter.pat
 Patch4:     pcre2-10.32-Fix-heap-limit-checking-overflow-bug-in-pcre2_dfa_ma.patch
 # Fix anchoring a pattern preceded with (*MARK), in upstream after 10.32
 Patch5:     pcre2-10.32-Fix-non-recognition-of-anchoring-when-preceded-by-MA.patch
+# Fix OpenPOWER 64-bit ELFv2 ABI detection in JIT compiler, upstream bug #2353,
+# fix an undefined behavior in aarch64 JIT compiler, upstream bug #2355,
+# in upstream after 10.32
+Patch6:     pcre2-10.32-JIT-compiler-update.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -145,6 +149,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -248,6 +253,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Thu Jan 03 2019 Petr Pisar <ppisar@redhat.com> - 10.32-5
 - Fix anchoring a pattern preceded with (*MARK)
+- Fix OpenPOWER 64-bit ELFv2 ABI detection in JIT compiler (upstream bug #2353)
+- Fix an undefined behavior in aarch64 JIT compiler (upstream bug #2355)
 
 * Thu Nov 01 2018 Petr Pisar <ppisar@redhat.com> - 10.32-4
 - Fix matching a zero-repeated subroutine call at a start of a pattern
