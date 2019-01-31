@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.32
-Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -74,6 +74,9 @@ Patch7:     pcre2-10.32-Provide-alternative-POSIX-names.patch
 # Link applications to PCRE2-specific symbols when using POSIX API, bug #1667614,
 # upstream bug 1830, proposed to upstream
 Patch8:     pcre2-10.32-Declare-POSIX-regex-function-names-as-macros-to-PCRE.patch
+# Fix version conditions in DFA engine, upstream bug #2367,
+# in upstream after 10.32
+Patch9:     pcre2-10.32-Fix-bug-in-VERSION-conditional-test-in-DFA-matching.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -158,6 +161,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -259,6 +263,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jan 31 2019 Petr Pisar <ppisar@redhat.com> - 10.32-7
+- Fix version conditions in DFA engine (upstream bug #2367)
+
 * Tue Jan 22 2019 Petr Pisar <ppisar@redhat.com> - 10.32-6
 - Link applications to PCRE2-specific symbols when using POSIX API (bug #1667614)
 
