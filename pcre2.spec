@@ -72,8 +72,8 @@ Patch6:     pcre2-10.32-JIT-compiler-update.patch
 # upstream bug 1830, in upstream after 10.32
 Patch7:     pcre2-10.32-Provide-alternative-POSIX-names.patch
 # Link applications to PCRE2-specific symbols when using POSIX API, bug #1667614,
-# upstream bug 1830, proposed to upstream
-Patch8:     pcre2-10.32-Declare-POSIX-regex-function-names-as-macros-to-PCRE.patch
+# upstream bug 1830, in upstram after 10.32
+Patch8:     pcre2-10.32-Update-POSIX-wrapper-to-use-macros-in-the-.h-file-bu.patch
 # Fix version conditions in DFA engine, upstream bug #2367,
 # in upstream after 10.32
 Patch9:     pcre2-10.32-Fix-bug-in-VERSION-conditional-test-in-DFA-matching.patch
@@ -265,6 +265,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Thu Jan 31 2019 Petr Pisar <ppisar@redhat.com> - 10.32-7
 - Fix version conditions in DFA engine (upstream bug #2367)
+- Use an upstream fix for POSIX names as macros (bug #1667614)
 
 * Tue Jan 22 2019 Petr Pisar <ppisar@redhat.com> - 10.32-6
 - Link applications to PCRE2-specific symbols when using POSIX API (bug #1667614)
