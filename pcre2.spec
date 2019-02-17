@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.32
-Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}.1
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -263,6 +263,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Sun Feb 17 2019 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 10.32-7.1
+- Rebuild for readline 8.0
+
 * Thu Jan 31 2019 Petr Pisar <ppisar@redhat.com> - 10.32-7
 - Fix version conditions in DFA engine (upstream bug #2367)
 - Use an upstream fix for POSIX names as macros (bug #1667614)
