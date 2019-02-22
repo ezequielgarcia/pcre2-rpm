@@ -1,0 +1,99 @@
+From 529a60807c0a6f7d8ff7f2d9dfdd4b8df9ce6c66 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 14 Feb 2019 16:07:14 +0000
+Subject: [PATCH] Fix two identical documentation typos.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@1075 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.32.
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ doc/html/pcre2_pattern_info.html | 3 ++-
+ doc/html/pcre2api.html           | 3 ++-
+ doc/pcre2.txt                    | 3 ++-
+ doc/pcre2_pattern_info.3         | 5 +++--
+ doc/pcre2api.3                   | 3 ++-
+ 5 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/doc/html/pcre2_pattern_info.html b/doc/html/pcre2_pattern_info.html
+index 2e35709..eaaac6c 100644
+--- a/doc/html/pcre2_pattern_info.html
++++ b/doc/html/pcre2_pattern_info.html
+@@ -19,7 +19,8 @@ SYNOPSIS
+ <b>#include &#60;pcre2.h&#62;</b>
+ </P>
+ <P>
+-<b>int pcre2_pattern_info(const pcre2 *<i>code</i>, uint32_t <i>what</i>, void *<i>where</i>);</b>
++<b>int pcre2_pattern_info(const pcre2_code *<i>code</i>, uint32_t <i>what</i>,</b>
++<b>   void *<i>where</i>);</b>
+ </P>
+ <br><b>
+ DESCRIPTION
+diff --git a/doc/html/pcre2api.html b/doc/html/pcre2api.html
+index 17f9794..9f4e314 100644
+--- a/doc/html/pcre2api.html
++++ b/doc/html/pcre2api.html
+@@ -307,7 +307,8 @@ document for an overview of all the PCRE2 documentation.
+ <b>const unsigned char *pcre2_maketables(pcre2_general_context *<i>gcontext</i>);</b>
+ <br>
+ <br>
+-<b>int pcre2_pattern_info(const pcre2 *<i>code</i>, uint32_t <i>what</i>, void *<i>where</i>);</b>
++<b>int pcre2_pattern_info(const pcre2_code *<i>code</i>, uint32_t <i>what</i>, </b>
++<b>  void *<i>where</i>);</b>
+ <br>
+ <br>
+ <b>int pcre2_callout_enumerate(const pcre2_code *<i>code</i>,</b>
+diff --git a/doc/pcre2.txt b/doc/pcre2.txt
+index b8d2d20..02168e8 100644
+--- a/doc/pcre2.txt
++++ b/doc/pcre2.txt
+@@ -398,7 +398,8 @@ PCRE2 NATIVE API AUXILIARY FUNCTIONS
+ 
+        const unsigned char *pcre2_maketables(pcre2_general_context *gcontext);
+ 
+-       int pcre2_pattern_info(const pcre2 *code, uint32_t what, void *where);
++       int pcre2_pattern_info(const pcre2_code *code, uint32_t what,
++         void *where);
+ 
+        int pcre2_callout_enumerate(const pcre2_code *code,
+          int (*callback)(pcre2_callout_enumerate_block *, void *),
+diff --git a/doc/pcre2_pattern_info.3 b/doc/pcre2_pattern_info.3
+index 01b74a2..edd8989 100644
+--- a/doc/pcre2_pattern_info.3
++++ b/doc/pcre2_pattern_info.3
+@@ -1,4 +1,4 @@
+-.TH PCRE2_PATTERN_INFO 3 "16 December 2017" "PCRE2 10.31"
++.TH PCRE2_PATTERN_INFO 3 "14 February 2019" "PCRE2 10.33"
+ .SH NAME
+ PCRE2 - Perl-compatible regular expressions (revised API)
+ .SH SYNOPSIS
+@@ -7,7 +7,8 @@ PCRE2 - Perl-compatible regular expressions (revised API)
+ .B #include <pcre2.h>
+ .PP
+ .nf
+-.B int pcre2_pattern_info(const pcre2 *\fIcode\fP, uint32_t \fIwhat\fP, void *\fIwhere\fP);
++.B int pcre2_pattern_info(const pcre2_code *\fIcode\fP, uint32_t \fIwhat\fP,
++.B "   void *\fIwhere\fP);"
+ .fi
+ .
+ .SH DESCRIPTION
+diff --git a/doc/pcre2api.3 b/doc/pcre2api.3
+index ba90c86..71651f6 100644
+--- a/doc/pcre2api.3
++++ b/doc/pcre2api.3
+@@ -243,7 +243,8 @@ document for an overview of all the PCRE2 documentation.
+ .sp
+ .B const unsigned char *pcre2_maketables(pcre2_general_context *\fIgcontext\fP);
+ .sp
+-.B int pcre2_pattern_info(const pcre2 *\fIcode\fP, uint32_t \fIwhat\fP, void *\fIwhere\fP);
++.B int pcre2_pattern_info(const pcre2_code *\fIcode\fP, uint32_t \fIwhat\fP, 
++.B "  void *\fIwhere\fP);"
+ .sp
+ .B int pcre2_callout_enumerate(const pcre2_code *\fIcode\fP,
+ .B "  int (*\fIcallback\fP)(pcre2_callout_enumerate_block *, void *),"
+-- 
+2.20.1
+

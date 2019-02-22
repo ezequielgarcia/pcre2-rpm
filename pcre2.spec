@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.32
-Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}.1
+Release:    %{?rcversion:0.}8%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -77,6 +77,9 @@ Patch8:     pcre2-10.32-Update-POSIX-wrapper-to-use-macros-in-the-.h-file-bu.pat
 # Fix version conditions in DFA engine, upstream bug #2367,
 # in upstream after 10.32
 Patch9:     pcre2-10.32-Fix-bug-in-VERSION-conditional-test-in-DFA-matching.patch
+# Fix pcre2_pattern_info() documentation, upstream bug #2373,
+# in upstream after 10.32
+Patch10:    pcre2-10.32-Fix-two-identical-documentation-typos.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -162,6 +165,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -263,6 +267,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Feb 22 2019 Petr Pisar <ppisar@redhat.com> - 10.32-8
+- Fix pcre2_pattern_info() documentation (upstream bug #2373)
+
 * Sun Feb 17 2019 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 10.32-7.1
 - Rebuild for readline 8.0
 
