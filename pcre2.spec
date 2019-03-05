@@ -6,10 +6,10 @@
 %bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.32
-Release:    %{?rcversion:0.}8%{?rcversion:.%rcversion}%{?dist}
+Version:    10.33
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -49,37 +49,6 @@ URL:        http://www.pcre.org/
 Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Fix a subject buffer overread in JIT when UTF is disabled and \X or \R has
-# a greater than 1 fixed quantifier, upstream bug #2320, in upstream after
-# 10.32
-Patch1:     pcre2-10.32-Fix-subject-buffer-overread-in-JIT.-Found-by-Yunho-K.patch
-# Fix caseless matching an extended class in JIT mode, upstream bug #2321,
-# in upstream after 10.32
-Patch2:     pcre2-10.32-Fix-an-xclass-matching-issue-in-JIT.patch
-# Fix matching a zero-repeated subroutine call at a start of a pattern,
-# upstream bug #2332, in upstream after 10.32
-Patch3:     pcre2-10.32-Fix-zero-repeated-subroutine-call-at-start-of-patter.patch
-# Fix heap limit checking overflow in pcre2_dfa_match(), upstream bug #2334,
-# in upstream after 10.32
-Patch4:     pcre2-10.32-Fix-heap-limit-checking-overflow-bug-in-pcre2_dfa_ma.patch
-# Fix anchoring a pattern preceded with (*MARK), in upstream after 10.32
-Patch5:     pcre2-10.32-Fix-non-recognition-of-anchoring-when-preceded-by-MA.patch
-# Fix OpenPOWER 64-bit ELFv2 ABI detection in JIT compiler, upstream bug #2353,
-# fix an undefined behavior in aarch64 JIT compiler, upstream bug #2355,
-# in upstream after 10.32
-Patch6:     pcre2-10.32-JIT-compiler-update.patch
-# Define PCRE2-specific symbols in pcre2-posix library, bug #1667614,
-# upstream bug 1830, in upstream after 10.32
-Patch7:     pcre2-10.32-Provide-alternative-POSIX-names.patch
-# Link applications to PCRE2-specific symbols when using POSIX API, bug #1667614,
-# upstream bug 1830, in upstram after 10.32
-Patch8:     pcre2-10.32-Update-POSIX-wrapper-to-use-macros-in-the-.h-file-bu.patch
-# Fix version conditions in DFA engine, upstream bug #2367,
-# in upstream after 10.32
-Patch9:     pcre2-10.32-Fix-bug-in-VERSION-conditional-test-in-DFA-matching.patch
-# Fix pcre2_pattern_info() documentation, upstream bug #2373,
-# in upstream after 10.32
-Patch10:    pcre2-10.32-Fix-two-identical-documentation-typos.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -156,16 +125,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %prep
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -198,6 +157,7 @@ autoreconf -vif
     --enable-pcre2-16 \
     --enable-pcre2-32 \
     --enable-pcre2grep-callout \
+    --enable-pcre2grep-callout-fork \
     --disable-pcre2grep-libbz2 \
     --disable-pcre2grep-libz \
     --disable-pcre2test-libedit \
@@ -206,16 +166,17 @@ autoreconf -vif
 %else
     --disable-pcre2test-libreadline \
 %endif
+    --enable-percent-zt \
     --disable-rebuild-chartables \
     --enable-shared \
     --disable-silent-rules \
     --enable-static \
     --enable-unicode \
     --disable-valgrind
-make %{?_smp_mflags}
+%{make_build}
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
+%{make_install}
 # Get rid of unneeded *.la files
 rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 # These are handled by %%doc in %%files
@@ -224,24 +185,19 @@ rm -rf $RPM_BUILD_ROOT%{_docdir}/pcre2
 %check
 make %{?_smp_mflags} check VERBOSE=yes
 
-%ldconfig_scriptlets
-%ldconfig_scriptlets utf16
-%ldconfig_scriptlets utf32
-
 %files
-%{_libdir}/libpcre2-8.so.*
-%{_libdir}/libpcre2-posix.so.*
-%{!?_licensedir:%global license %%doc}
+%{_libdir}/libpcre2-8.so.0*
+%{_libdir}/libpcre2-posix.so.2*
 %license COPYING LICENCE
 %doc AUTHORS ChangeLog NEWS
 
 %files utf16
-%{_libdir}/libpcre2-16.so.*
+%{_libdir}/libpcre2-16.so.0*
 %license COPYING LICENCE
 %doc AUTHORS ChangeLog NEWS
 
 %files utf32
-%{_libdir}/libpcre2-32.so.*
+%{_libdir}/libpcre2-32.so.0*
 %license COPYING LICENCE
 %doc AUTHORS ChangeLog NEWS
 
@@ -267,6 +223,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Mar 05 2019 Petr Pisar <ppisar@redhat.com> - 10.33-0.1.RC1
+- 10.33-RC1 bump
+
 * Fri Feb 22 2019 Petr Pisar <ppisar@redhat.com> - 10.32-8
 - Fix pcre2_pattern_info() documentation (upstream bug #2373)
 
