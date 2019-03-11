@@ -1,0 +1,43 @@
+From 25c6e08a2c43d50140401e620fff11aa0670effd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Petr=20P=C3=ADsa=C5=99?= <ppisar@redhat.com>
+Date: Mon, 11 Mar 2019 12:52:10 +0100
+Subject: [PATCH] Fix a crash in pcre2_substitute() if mcontext is NULL
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A regression introduced in:
+
+    commit 3c2c4493cc3b12dddd2493b465f0ce50e3f77b5a
+    Author: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+    Date:   Tue Sep 18 16:31:30 2018 +0000
+
+	Implement callouts from pcre2_substitute().
+	git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@1012 6239d852-aaf2-0410-a92c-79f79f948069
+
+causes a crash in pcre2_substitute() if called with a NULL mcontext argument.
+This patch ffixes it.
+
+<https://bugs.exim.org/show_bug.cgi?id=2382>
+
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+---
+ src/pcre2_substitute.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/pcre2_substitute.c b/src/pcre2_substitute.c
+index 0b46629..0b63ef4 100644
+--- a/src/pcre2_substitute.c
++++ b/src/pcre2_substitute.c
+@@ -839,7 +839,7 @@ do
+   remembered. Do the callout if there is one and we have done an actual 
+   replacement. */
+   
+-  if (!overflowed && mcontext->substitute_callout != NULL)
++  if (!overflowed && mcontext != NULL && mcontext->substitute_callout != NULL)
+     {
+     scb.subscount = subs;  
+     scb.output_offsets[1] = buff_offset;
+-- 
+2.20.1
+
