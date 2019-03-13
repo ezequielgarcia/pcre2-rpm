@@ -9,7 +9,7 @@
 %global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -50,8 +50,8 @@ Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:T
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
 # Fix a crash in pcre2_substitute() function if mcontext argument is NULL,
-# bug #1686434, upstream bug #2382, proposed to upstream
-Patch1:     pcre2-10.33-RC1-Fix-a-crash-in-pcre2_substitute-if-mcontext-is-NULL.patch
+# bug #1686434, upstream bug #2382, in upstream after 10.33-RC1
+Patch1:     pcre2-10.33-RC1-Fix-crash-in-pcre2_substitute-with-NULL-match-contex.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -227,6 +227,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Mar 13 2019 Petr Pisar <ppisar@redhat.com> - 10.33-0.3.RC1
+- Use upstream fix for a crash in pcre2_substitute() function if mcontext
+  argument is NULL (bug #1686434)
+
 * Mon Mar 11 2019 Petr Pisar <ppisar@redhat.com> - 10.33-0.2.RC1
 - Fix a crash in pcre2_substitute() function if mcontext argument is NULL
   (bug #1686434)
