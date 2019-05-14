@@ -53,6 +53,12 @@ Patch0:     pcre2-10.10-Fix-multilib.patch
 Patch1:     pcre2-10.33-Implement-a-check-on-the-number-of-capturing-parenth.patch
 # Correct a misspelling in a documentation, in upstream after 10.33
 Patch2:     pcre2-10.33-Fix-typo.patch
+# 1/2 Fix a crash when \X is used without UTF mode in a JIT, upstream bug #2399,
+# in upstream after 10.33
+Patch3:     pcre2-10.33-Fix-crash-when-X-is-used-without-UTF-in-JIT.patch
+# 2/2 Fix a crash when \X is used without UTF mode in a JIT, upstream bug #2399,
+# in upstream after 10.33
+Patch4:     pcre2-10.33-Forgot-this-file-in-previous-commit.-Fixes-JIT-non-U.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -131,6 +137,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -231,6 +239,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Mon May 13 2019 Petr Pisar <ppisar@redhat.com> - 10.33-3
 - Correct a misspelling in a documentation
+- Fix a crash when \X is used without UTF mode in a JIT (upstream bug #2399)
 
 * Mon May 06 2019 Petr Pisar <ppisar@redhat.com> - 10.33-2
 - Validate number of capturing parentheses
