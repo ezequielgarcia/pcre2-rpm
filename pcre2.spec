@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -59,6 +59,9 @@ Patch3:     pcre2-10.33-Fix-crash-when-X-is-used-without-UTF-in-JIT.patch
 # 2/2 Fix a crash when \X is used without UTF mode in a JIT, upstream bug #2399,
 # in upstream after 10.33
 Patch4:     pcre2-10.33-Forgot-this-file-in-previous-commit.-Fixes-JIT-non-U.patch
+# Fix a non-JIT match to return (*MARK) names from a successful conditional
+# assertion, in upstream after 10.33
+Patch5:     pcre2-10.33-Make-pcre2_match-return-MARK-names-from-successful-c.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -139,6 +142,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -237,6 +241,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jun 17 2019 Petr Pisar <ppisar@redhat.com> - 10.33-4
+- Fix a non-JIT match to return (*MARK) names from a successful conditional
+  assertion
+
 * Mon May 13 2019 Petr Pisar <ppisar@redhat.com> - 10.33-3
 - Correct a misspelling in a documentation
 - Fix a crash when \X is used without UTF mode in a JIT (upstream bug #2399)
