@@ -62,6 +62,9 @@ Patch4:     pcre2-10.33-Forgot-this-file-in-previous-commit.-Fixes-JIT-non-U.pat
 # Fix a non-JIT match to return (*MARK) names from a successful conditional
 # assertion, in upstream after 10.33
 Patch5:     pcre2-10.33-Make-pcre2_match-return-MARK-names-from-successful-c.patch
+# Fix pcre2grep --only-matching output when number of capturing groups exceeds
+# 32, upstream bug #2407, in upstream after 10.33
+Patch6:     pcre2-10.33-Fix-pcre2grep-o-bug-when-ovector-overflows-add-optio.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -143,6 +146,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -244,6 +248,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Mon Jun 17 2019 Petr Pisar <ppisar@redhat.com> - 10.33-4
 - Fix a non-JIT match to return (*MARK) names from a successful conditional
   assertion
+- Fix pcre2grep --only-matching output when number of capturing groups exceeds
+  32 (upstream bug #2407)
 
 * Mon May 13 2019 Petr Pisar <ppisar@redhat.com> - 10.33-3
 - Correct a misspelling in a documentation
