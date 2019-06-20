@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -65,6 +65,9 @@ Patch5:     pcre2-10.33-Make-pcre2_match-return-MARK-names-from-successful-c.pat
 # Fix pcre2grep --only-matching output when number of capturing groups exceeds
 # 32, upstream bug #2407, in upstream after 10.33
 Patch6:     pcre2-10.33-Fix-pcre2grep-o-bug-when-ovector-overflows-add-optio.patch
+# Do not ignore {1} quantifier when it is applied to a non-possessive group
+# with more alternatives, in upstream after 10.33
+Patch7:     pcre2-10.33-Don-t-ignore-1-when-it-is-applied-to-a-parenthesized.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -147,6 +150,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -245,6 +249,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jun 20 2019 Petr Pisar <ppisar@redhat.com> - 10.33-5
+- Do not ignore {1} quantifier when it is applied to a non-possessive group
+  with more alternatives
+
 * Mon Jun 17 2019 Petr Pisar <ppisar@redhat.com> - 10.33-4
 - Fix a non-JIT match to return (*MARK) names from a successful conditional
   assertion
