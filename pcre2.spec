@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -68,6 +68,9 @@ Patch6:     pcre2-10.33-Fix-pcre2grep-o-bug-when-ovector-overflows-add-optio.pat
 # Do not ignore {1} quantifier when it is applied to a non-possessive group
 # with more alternatives, in upstream after 10.33
 Patch7:     pcre2-10.33-Don-t-ignore-1-when-it-is-applied-to-a-parenthesized.patch
+# Fix a DFA to recognize a partial match if the end of a subject is encountered
+# in a lookahead, an atomic group, or a recursion, in upstream after 10.33
+Patch8:     pcre2-10.33-Fix-partial-matching-bug-in-pcre2_dfa_match.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -151,6 +154,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -249,6 +253,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Jul 03 2019 Petr Pisar <ppisar@redhat.com> - 10.33-6
+- Fix a DFA to recognize a partial match if the end of a subject is encountered
+  in a lookahead, an atomic group, or a recursion
+
 * Thu Jun 20 2019 Petr Pisar <ppisar@redhat.com> - 10.33-5
 - Do not ignore {1} quantifier when it is applied to a non-possessive group
   with more alternatives
