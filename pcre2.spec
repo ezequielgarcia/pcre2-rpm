@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -71,6 +71,12 @@ Patch7:     pcre2-10.33-Don-t-ignore-1-when-it-is-applied-to-a-parenthesized.pat
 # Fix a DFA to recognize a partial match if the end of a subject is encountered
 # in a lookahead, an atomic group, or a recursion, in upstream after 10.33
 Patch8:     pcre2-10.33-Fix-partial-matching-bug-in-pcre2_dfa_match.patch
+# 1/2 Fix an integer overflow when checking a lookbehind length,
+# in upstream after 10.33
+Patch9:     pcre2-10.33-Check-for-integer-overflow-when-computing-lookbehind.patch
+# 2/2 Fix an integer overflow when checking a lookbehind length,
+# in upstream after 10.33
+Patch10:    pcre2-10.33-Additional-overflow-test.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -155,6 +161,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
+%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -253,6 +261,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jul 11 2019 Petr Pisar <ppisar@redhat.com> - 10.33-7
+- Fix an integer overflow when checking a lookbehind length
+
 * Wed Jul 03 2019 Petr Pisar <ppisar@redhat.com> - 10.33-6
 - Fix a DFA to recognize a partial match if the end of a subject is encountered
   in a lookahead, an atomic group, or a recursion
