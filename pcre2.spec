@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}8%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -77,6 +77,9 @@ Patch9:     pcre2-10.33-Check-for-integer-overflow-when-computing-lookbehind.pat
 # 2/2 Fix an integer overflow when checking a lookbehind length,
 # in upstream after 10.33
 Patch10:    pcre2-10.33-Additional-overflow-test.patch
+# Fix a mismatch with a lookbehind within a lookahead within a lookbehind,
+# upstream bug #2412, in upstream after 10.33
+Patch11:    pcre2-10.33-Fix-lookbehind-within-lookahead-within-lookbehind-mi.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -163,6 +166,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -261,6 +265,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Jul 17 2019 Petr Pisar <ppisar@redhat.com> - 10.33-8
+- Fix a mismatch with a lookbehind within a lookahead within a lookbehind
+  (upstream bug #2412)
+
 * Thu Jul 11 2019 Petr Pisar <ppisar@redhat.com> - 10.33-7
 - Fix an integer overflow when checking a lookbehind length
 
