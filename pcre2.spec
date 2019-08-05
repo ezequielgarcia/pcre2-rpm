@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}9%{?rcversion:.%rcversion}%{?dist}.1
+Release:    %{?rcversion:0.}10%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -83,6 +83,9 @@ Patch11:    pcre2-10.33-Fix-lookbehind-within-lookahead-within-lookbehind-mi.pat
 # 2/2 Fix a mismatch with a lookbehind within a lookahead within a lookbehind,
 # upstream bug #2412, in upstream after 10.33
 Patch12:    pcre2-10.33-Fix-bug-in-recent-patch-for-lookbehinds-within-looka.patch
+# Fix an incorrect computation of a group length when a branch exceeds 65535,
+# upstream bug #2428, in upstream after 10.33
+Patch13:    pcre2-10.33-Fix-incorrect-computation-of-group-length-when-one-b.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -171,6 +174,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
+%patch13 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -269,6 +273,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Aug 05 2019 Petr Pisar <ppisar@redhat.com> - 10.33-10
+- Fix an incorrect computation of a group length when a branch exceeds 65535
+  (upstream bug #2428)
+
 * Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 10.33-9.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
 
