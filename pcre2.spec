@@ -45,7 +45,7 @@ Summary:    Perl-compatible regular expression library
 # test-driver:                          GPLv2+ with exception
 # testdata:                             Public Domain
 License:    BSD
-URL:        http://www.pcre.org/
+URL:        https://www.pcre.org/
 Source0:    ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
 Source1:    ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2.sig
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
@@ -280,6 +280,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Mon Aug 05 2019 Petr Pisar <ppisar@redhat.com> - 10.33-10
 - Fix an incorrect computation of a group length when a branch exceeds 65535
   (upstream bug #2428)
+- Use HTTPS protocol in URL metadata
 
 * Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 10.33-9.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
