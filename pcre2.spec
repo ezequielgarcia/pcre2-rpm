@@ -46,7 +46,9 @@ Summary:    Perl-compatible regular expression library
 # testdata:                             Public Domain
 License:    BSD
 URL:        http://www.pcre.org/
-Source:     ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
+Source0:    ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
+Source1:    ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2.sig
+Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
 # Validate number of capturing parentheses, in upstream after 10.33
@@ -90,6 +92,7 @@ BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
 BuildRequires:  gcc
+BuildRequires:  gnupg2
 BuildRequires:  libtool
 BuildRequires:  make
 %if %{with pcre2_enables_readline}
@@ -160,6 +163,7 @@ Requires:   %{name}%{_isa} = %{version}-%{release}
 Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 
 %prep
+%{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
 %patch1 -p1
