@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}10%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}11%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -88,6 +88,8 @@ Patch12:    pcre2-10.33-Fix-bug-in-recent-patch-for-lookbehinds-within-looka.pat
 # Fix an incorrect computation of a group length when a branch exceeds 65535,
 # upstream bug #2428, in upstream after 10.33
 Patch13:    pcre2-10.33-Fix-incorrect-computation-of-group-length-when-one-b.patch
+# Fix reporting rightmost consulted characters, in upstream after 10.33
+Patch14:    pcre2-10.33-Fix-allusedtext-bug-rightmost-consulted-character-in.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -179,6 +181,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch11 -p1
 %patch12 -p1
 %patch13 -p1
+%patch14 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -277,6 +280,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Aug 12 2019 Petr Pisar <ppisar@redhat.com> - 10.33-11
+- Fix reporting rightmost consulted characters
+
 * Mon Aug 05 2019 Petr Pisar <ppisar@redhat.com> - 10.33-10
 - Fix an incorrect computation of a group length when a branch exceeds 65535
   (upstream bug #2428)
