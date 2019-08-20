@@ -46,8 +46,8 @@ Summary:    Perl-compatible regular expression library
 # testdata:                             Public Domain
 License:    BSD
 URL:        https://www.pcre.org/
-Source0:    ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
-Source1:    ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2.sig
+Source0:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2
+Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myversion}.tar.bz2.sig
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
