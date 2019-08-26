@@ -1,4 +1,4 @@
-From 4c3e518bff94e5f206a63e3a1e5d7e570402786b Mon Sep 17 00:00:00 2001
+From f966564e6e8fa85db153b827bf7e01879b8ee42b Mon Sep 17 00:00:00 2001
 From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
 Date: Sat, 3 Aug 2019 08:30:40 +0000
 Subject: [PATCH] Fix incorrect computation of group length when one branch
@@ -75,12 +75,12 @@ index e883c2e..cb5e7f1 100644
      branchlength = 0;
      had_recurse = FALSE;
 diff --git a/testdata/testinput2 b/testdata/testinput2
-index 1bfe591..384239a 100644
+index 9412bf6..b9d2826 100644
 --- a/testdata/testinput2
 +++ b/testdata/testinput2
-@@ -5603,4 +5603,12 @@ a)"xI
- # Expect error (recursion => not fixed length)
- /(\2)((?=(?<=\1)))/
+@@ -5597,4 +5597,12 @@ a)"xI
+ # Multiplication overflow
+ /(X{65535})(?<=\1{32770})/
  
 +/\A\s*(a|(?:[^`]{28500}){4})/I
 +    a
@@ -92,12 +92,12 @@ index 1bfe591..384239a 100644
 +
  # End of testinput2
 diff --git a/testdata/testoutput2 b/testdata/testoutput2
-index 758b4db..0983741 100644
+index 950095f..16c8bd6 100644
 --- a/testdata/testoutput2
 +++ b/testdata/testoutput2
-@@ -16956,6 +16956,33 @@ No match
- /(\2)((?=(?<=\1)))/
- Failed: error 125 at offset 8: lookbehind assertion is not fixed length
+@@ -16948,6 +16948,33 @@ Failed: error 187 at offset 15: lookbehind assertion is too long
+ /(X{65535})(?<=\1{32770})/
+ Failed: error 187 at offset 10: lookbehind assertion is too long
  
 +/\A\s*(a|(?:[^`]{28500}){4})/I
 +Capture group count = 1
@@ -130,5 +130,5 @@ index 758b4db..0983741 100644
  Error -70: PCRE2_ERROR_BADDATA (unknown error number)
  Error -62: bad serialized data
 -- 
-2.20.1
+2.21.0
 

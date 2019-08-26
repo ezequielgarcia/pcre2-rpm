@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}11%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}12%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -79,17 +79,14 @@ Patch9:     pcre2-10.33-Check-for-integer-overflow-when-computing-lookbehind.pat
 # 2/2 Fix an integer overflow when checking a lookbehind length,
 # in upstream after 10.33
 Patch10:    pcre2-10.33-Additional-overflow-test.patch
-# 1/2 Fix a mismatch with a lookbehind within a lookahead within a lookbehind,
-# upstream bug #2412, in upstream after 10.33
-Patch11:    pcre2-10.33-Fix-lookbehind-within-lookahead-within-lookbehind-mi.patch
-# 2/2 Fix a mismatch with a lookbehind within a lookahead within a lookbehind,
-# upstream bug #2412, in upstream after 10.33
-Patch12:    pcre2-10.33-Fix-bug-in-recent-patch-for-lookbehinds-within-looka.patch
 # Fix an incorrect computation of a group length when a branch exceeds 65535,
 # upstream bug #2428, in upstream after 10.33
-Patch13:    pcre2-10.33-Fix-incorrect-computation-of-group-length-when-one-b.patch
+Patch11:    pcre2-10.33-Fix-incorrect-computation-of-group-length-when-one-b.patch
 # Fix reporting rightmost consulted characters, in upstream after 10.33
-Patch14:    pcre2-10.33-Fix-allusedtext-bug-rightmost-consulted-character-in.patch
+Patch12:    pcre2-10.33-Fix-allusedtext-bug-rightmost-consulted-character-in.patch
+# Test a regression in a lookbehind after a condition, bug #1743863,
+# upstream bug #2433, not in the upstream
+Patch13:    pcre2-10.33-Test-a-regression-in-a-lookbehind-after-a-condition.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -181,7 +178,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch11 -p1
 %patch12 -p1
 %patch13 -p1
-%patch14 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -280,6 +276,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Aug 26 2019 Petr Pisar <ppisar@redhat.com> - 10.33-12
+- Revert a fix for a mismatch with a lookbehind within a lookahead within
+  a lookbehind (bug #1743863)
+
 * Mon Aug 12 2019 Petr Pisar <ppisar@redhat.com> - 10.33-11
 - Fix reporting rightmost consulted characters
 
