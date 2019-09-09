@@ -1,0 +1,39 @@
+From bc7fb8964ca3a422f472189b0eff751c1cc377b0 Mon Sep 17 00:00:00 2001
+From: zherczeg <zherczeg@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 9 Sep 2019 07:12:00 +0000
+Subject: [PATCH] Add underflow check in JIT.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@1167 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.33.
+---
+ src/pcre2_jit_compile.c | 8 ++++++--
+
+diff --git a/src/pcre2_jit_compile.c b/src/pcre2_jit_compile.c
+index 8cbd8f9..79a27fd 100644
+--- a/src/pcre2_jit_compile.c
++++ b/src/pcre2_jit_compile.c
+@@ -5793,12 +5793,16 @@ if (common->match_end_ptr != 0)
+   {
+   OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(SLJIT_SP), common->match_end_ptr);
+   OP1(SLJIT_MOV, TMP3, 0, STR_END, 0);
+-  OP2(SLJIT_SUB, STR_END, 0, STR_END, 0, SLJIT_IMM, IN_UCHARS(max));
++  OP2(SLJIT_SUB | SLJIT_SET_LESS, STR_END, 0, STR_END, 0, SLJIT_IMM, IN_UCHARS(max));
++  add_jump(compiler, &common->failed_match, JUMP(SLJIT_LESS));
+   OP2(SLJIT_SUB | SLJIT_SET_GREATER, SLJIT_UNUSED, 0, STR_END, 0, TMP1, 0);
+   CMOV(SLJIT_GREATER, STR_END, TMP1, 0);
+   }
+ else
+-  OP2(SLJIT_SUB, STR_END, 0, STR_END, 0, SLJIT_IMM, IN_UCHARS(max));
++  {
++  OP2(SLJIT_SUB | SLJIT_SET_LESS, STR_END, 0, STR_END, 0, SLJIT_IMM, IN_UCHARS(max));
++  add_jump(compiler, &common->failed_match, JUMP(SLJIT_LESS));
++  }
+ 
+ SLJIT_ASSERT(range_right >= 0);
+ 
+-- 
+2.21.0
+

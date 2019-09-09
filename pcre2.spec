@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}13%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}14%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -94,6 +94,9 @@ Patch14:    pcre2-10.33-Fix-allusedtext-bug-rightmost-consulted-character-in.pat
 # upstream bug #2433, in upstream after 10.33, fixes a bug introduced in
 # Fix-lookbehind-within-lookahead-within-lookbehind-mi.patch
 Patch15:    pcre2-10.33-Fix-bug-introduced-in-commit-1133.-Lookbehinds-that-.patch
+# Fix a crash in JIT match when a subject has a zero length and an invalid
+# pointer, upstream bug #2440, in upstream after 10.33
+Patch16:    pcre2-10.33-Add-underflow-check-in-JIT.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -187,6 +190,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch13 -p1
 %patch14 -p1
 %patch15 -p1
+%patch16 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -285,6 +289,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Sep 09 2019 Petr Pisar <ppisar@redhat.com> - 10.33-14
+- Fix a crash in JIT match when a subject has a zero length and an invalid
+  pointer (upstream bug #2440)
+
 * Tue Aug 27 2019 Petr Pisar <ppisar@redhat.com> - 10.33-13
 - Readd a fix for a mismatch with a lookbehind within a lookahead within
   a lookbehind and fix the regression in matching a lookbehind after
