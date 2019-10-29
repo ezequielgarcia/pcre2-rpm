@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.33
-Release:    %{?rcversion:0.}14%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}15%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -97,6 +97,9 @@ Patch15:    pcre2-10.33-Fix-bug-introduced-in-commit-1133.-Lookbehinds-that-.pat
 # Fix a crash in JIT match when a subject has a zero length and an invalid
 # pointer, upstream bug #2440, in upstream after 10.33
 Patch16:    pcre2-10.33-Add-underflow-check-in-JIT.patch
+# Fix a use after free when freeing JIT memory, upstream bug #2453,
+# in upstream after 10.33
+Patch17:    pcre2-10.33-Fix-use-after-free-and-compilation-error-in-JIT.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -191,6 +194,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch14 -p1
 %patch15 -p1
 %patch16 -p1
+%patch17 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -289,6 +293,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Oct 29 2019 Petr Pisar <ppisar@redhat.com> - 10.33-15
+- Fix a use after free when freeing JIT memory (upstream bug #2453)
+
 * Mon Sep 09 2019 Petr Pisar <ppisar@redhat.com> - 10.33-14
 - Fix a crash in JIT match when a subject has a zero length and an invalid
   pointer (upstream bug #2440)
