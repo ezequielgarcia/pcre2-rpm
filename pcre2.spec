@@ -100,6 +100,10 @@ Patch16:    pcre2-10.33-Add-underflow-check-in-JIT.patch
 # Fix a use after free when freeing JIT memory, upstream bug #2453,
 # in upstream after 10.33
 Patch17:    pcre2-10.33-Fix-use-after-free-and-compilation-error-in-JIT.patch
+# 1/2 Fix thread-safeness in regexec(), in upstream after 10.33
+Patch18:    pcre2-10.33-Ensure-regexec-is-thread-safe-to-avoid-sanitizer-war.patch
+# 2/2 Fix thread-safeness in regexec(), in upstream after 10.33
+Patch19:    pcre2-10.33-Fix-error-offset-bug-introduced-at-1176.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -195,6 +199,8 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch15 -p1
 %patch16 -p1
 %patch17 -p1
+%patch18 -p1
+%patch19 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -295,6 +301,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Tue Oct 29 2019 Petr Pisar <ppisar@redhat.com> - 10.33-15
 - Fix a use after free when freeing JIT memory (upstream bug #2453)
+- Fix thread-safeness in regexec()
 
 * Mon Sep 09 2019 Petr Pisar <ppisar@redhat.com> - 10.33-14
 - Fix a crash in JIT match when a subject has a zero length and an invalid
