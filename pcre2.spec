@@ -6,10 +6,10 @@
 %bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.33
-Release:    %{?rcversion:0.}15%{?rcversion:.%rcversion}%{?dist}
+Version:    10.34
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,61 +51,6 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Validate number of capturing parentheses, in upstream after 10.33
-Patch1:     pcre2-10.33-Implement-a-check-on-the-number-of-capturing-parenth.patch
-# Correct a misspelling in a documentation, in upstream after 10.33
-Patch2:     pcre2-10.33-Fix-typo.patch
-# 1/2 Fix a crash when \X is used without UTF mode in a JIT, upstream bug #2399,
-# in upstream after 10.33
-Patch3:     pcre2-10.33-Fix-crash-when-X-is-used-without-UTF-in-JIT.patch
-# 2/2 Fix a crash when \X is used without UTF mode in a JIT, upstream bug #2399,
-# in upstream after 10.33
-Patch4:     pcre2-10.33-Forgot-this-file-in-previous-commit.-Fixes-JIT-non-U.patch
-# Fix a non-JIT match to return (*MARK) names from a successful conditional
-# assertion, in upstream after 10.33
-Patch5:     pcre2-10.33-Make-pcre2_match-return-MARK-names-from-successful-c.patch
-# Fix pcre2grep --only-matching output when number of capturing groups exceeds
-# 32, upstream bug #2407, in upstream after 10.33
-Patch6:     pcre2-10.33-Fix-pcre2grep-o-bug-when-ovector-overflows-add-optio.patch
-# Do not ignore {1} quantifier when it is applied to a non-possessive group
-# with more alternatives, in upstream after 10.33
-Patch7:     pcre2-10.33-Don-t-ignore-1-when-it-is-applied-to-a-parenthesized.patch
-# Fix a DFA to recognize a partial match if the end of a subject is encountered
-# in a lookahead, an atomic group, or a recursion, in upstream after 10.33
-Patch8:     pcre2-10.33-Fix-partial-matching-bug-in-pcre2_dfa_match.patch
-# 1/2 Fix an integer overflow when checking a lookbehind length,
-# in upstream after 10.33
-Patch9:     pcre2-10.33-Check-for-integer-overflow-when-computing-lookbehind.patch
-# 2/2 Fix an integer overflow when checking a lookbehind length,
-# in upstream after 10.33
-Patch10:    pcre2-10.33-Additional-overflow-test.patch
-# 1/2 Fix a mismatch with a lookbehind within a lookahead within a lookbehind,
-# upstream bug #2412, in upstream after 10.33
-Patch11:    pcre2-10.33-Fix-lookbehind-within-lookahead-within-lookbehind-mi.patch
-# 2/2 Fix a mismatch with a lookbehind within a lookahead within a lookbehind,
-# upstream bug #2412, in upstream after 10.33
-Patch12:    pcre2-10.33-Fix-bug-in-recent-patch-for-lookbehinds-within-looka.patch
-# Fix an incorrect computation of a group length when a branch exceeds 65535,
-# upstream bug #2428, in upstream after 10.33
-Patch13:    pcre2-10.33-Fix-incorrect-computation-of-group-length-when-one-b.patch
-# Fix reporting rightmost consulted characters, in upstream after 10.33
-Patch14:    pcre2-10.33-Fix-allusedtext-bug-rightmost-consulted-character-in.patch
-# Fix a mismatch with a lookbehind after a condition, bug #1743863,
-# upstream bug #2433, in upstream after 10.33, fixes a bug introduced in
-# Fix-lookbehind-within-lookahead-within-lookbehind-mi.patch
-Patch15:    pcre2-10.33-Fix-bug-introduced-in-commit-1133.-Lookbehinds-that-.patch
-# Fix a crash in JIT match when a subject has a zero length and an invalid
-# pointer, upstream bug #2440, in upstream after 10.33
-Patch16:    pcre2-10.33-Add-underflow-check-in-JIT.patch
-# Fix a use after free when freeing JIT memory, upstream bug #2453,
-# in upstream after 10.33
-Patch17:    pcre2-10.33-Fix-use-after-free-and-compilation-error-in-JIT.patch
-# 1/2 Fix thread-safeness in regexec(), upstream bug #2447,
-# in upstream after 10.33
-Patch18:    pcre2-10.33-Ensure-regexec-is-thread-safe-to-avoid-sanitizer-war.patch
-# 2/2 Fix thread-safeness in regexec(), upstream bug #2447,
-# in upstream after 10.33
-Patch19:    pcre2-10.33-Fix-error-offset-bug-introduced-at-1176.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -184,25 +129,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -291,7 +217,6 @@ make %{?_smp_mflags} check VERBOSE=yes
 
 %files static
 %{_libdir}/*.a
-%{!?_licensedir:%global license %%doc}
 %license COPYING LICENCE
 
 %files tools
@@ -301,6 +226,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Oct 30 2019 Petr Pisar <ppisar@redhat.com> - 10.34-0.1.RC1
+- 10.34-RC1 bump
+
 * Tue Oct 29 2019 Petr Pisar <ppisar@redhat.com> - 10.33-15
 - Fix a use after free when freeing JIT memory (upstream bug #2453)
 - Fix thread-safeness in regexec() (upstream bug #2447)
