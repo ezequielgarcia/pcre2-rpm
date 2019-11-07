@@ -1,0 +1,246 @@
+Index: src/pcre2_jit_neon_inc.h
+===================================================================
+--- src/pcre2_jit_neon_inc.h	(revision 1183)
++++ src/pcre2_jit_neon_inc.h	(working copy)
+@@ -112,14 +112,14 @@
+ vect_t cmp1a, cmp1b, cmp2a, cmp2b;
+ const sljit_u32 diff = IN_UCHARS(offs1 - offs2);
+ PCRE2_UCHAR char1a = ic.c.c1;
+-PCRE2_UCHAR char1b = ic.c.c2;
+ PCRE2_UCHAR char2a = ic.c.c3;
+-PCRE2_UCHAR char2b = ic.c.c4;
+ 
+ # ifdef FFCPS_CHAR1A2A
+ cmp1a = VDUPQ(char1a);
+ cmp2a = VDUPQ(char2a);
+ # else
++PCRE2_UCHAR char1b = ic.c.c2;
++PCRE2_UCHAR char2b = ic.c.c4;
+ if (char1a == char1b)
+   cmp1a = VDUPQ(char1a);
+ else
+@@ -159,10 +159,17 @@
+   }
+ # endif
+ 
+-str_ptr += offs1;
++str_ptr += IN_UCHARS(offs1);
+ #endif
+ 
++#if PCRE2_CODE_UNIT_WIDTH != 8
++vect_t char_mask = VDUPQ(0xff);
++#endif
++
++#if defined(FF_UTF)
+ restart:;
++#endif
++
+ #if defined(FFCPS)
+ sljit_u8 *p1 = str_ptr - diff;
+ #endif
+@@ -169,7 +176,10 @@
+ sljit_s32 align_offset = ((uint64_t)str_ptr & 0xf);
+ str_ptr = (sljit_u8 *) ((uint64_t)str_ptr & ~0xf);
+ vect_t data = VLD1Q(str_ptr);
+-
++#if PCRE2_CODE_UNIT_WIDTH != 8
++data = VANDQ(data, char_mask);
++#endif
++ 
+ #if defined(FFCS)
+ vect_t eq = VCEQQ(data, vc1);
+ 
+@@ -186,7 +196,17 @@
+ # if defined(FFCPS_DIFF1)
+ vect_t prev_data = data;
+ # endif
+-vect_t data2 = VLD1Q(str_ptr - diff);
++
++vect_t data2;
++if (p1 < str_ptr)
++  {
++  data2 = VLD1Q(str_ptr - diff);
++#if PCRE2_CODE_UNIT_WIDTH != 8
++  data2 = VANDQ(data2, char_mask);
++#endif
++  }
++else
++  data2 = shift_left_n_lanes(data, offs1 - offs2);
+  
+ data = fast_forward_char_pair_compare(compare1_type, data, cmp1a, cmp1b);
+ data2 = fast_forward_char_pair_compare(compare2_type, data2, cmp2a, cmp2b);
+@@ -223,6 +243,9 @@
+ while (str_ptr < str_end)
+   {
+   vect_t orig_data = VLD1Q(str_ptr);
++#if PCRE2_CODE_UNIT_WIDTH != 8
++  orig_data = VANDQ(orig_data, char_mask);
++#endif
+   data = orig_data;
+ 
+ #if defined(FFCS)
+@@ -240,9 +263,12 @@
+ 
+ #if defined(FFCPS)
+ # if defined (FFCPS_DIFF1)
+-  data2 = VEXTQ(prev_data, data, 15);
++  data2 = VEXTQ(prev_data, data, VECTOR_FACTOR - 1);
+ # else
+   data2 = VLD1Q(str_ptr - diff);
++#  if PCRE2_CODE_UNIT_WIDTH != 8
++  data2 = VANDQ(data2, char_mask);
++#  endif
+ # endif
+ 
+ # ifdef FFCPS_CHAR1A2A
+Index: src/pcre2_jit_simd_inc.h
+===================================================================
+--- src/pcre2_jit_simd_inc.h	(revision 1183)
++++ src/pcre2_jit_simd_inc.h	(working copy)
+@@ -655,8 +655,9 @@
+ #endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
+ 
+ #if PCRE2_CODE_UNIT_WIDTH == 8
++# define VECTOR_FACTOR 16
+ # define vect_t uint8x16_t
+-# define VLD1Q vld1q_u8
++# define VLD1Q(X) vld1q_u8((sljit_u8 *)(X))
+ # define VCEQQ vceqq_u8
+ # define VORRQ vorrq_u8
+ # define VST1Q vst1q_u8
+@@ -668,8 +669,9 @@
+        uint64_t dw[2];
+ } quad_word;
+ #elif PCRE2_CODE_UNIT_WIDTH == 16
++# define VECTOR_FACTOR 8
+ # define vect_t uint16x8_t
+-# define VLD1Q vld1q_u16
++# define VLD1Q(X) vld1q_u16((sljit_u16 *)(X))
+ # define VCEQQ vceqq_u16
+ # define VORRQ vorrq_u16
+ # define VST1Q vst1q_u16
+@@ -681,8 +683,9 @@
+        uint64_t dw[2];
+ } quad_word;
+ #else
++# define VECTOR_FACTOR 4
+ # define vect_t uint32x4_t
+-# define VLD1Q vld1q_u32
++# define VLD1Q(X) vld1q_u32((sljit_u32 *)(X))
+ # define VCEQQ vceqq_u32
+ # define VORRQ vorrq_u32
+ # define VST1Q vst1q_u32
+@@ -697,23 +700,29 @@
+ 
+ #define FFCS
+ #include "pcre2_jit_neon_inc.h"
+-#define FF_UTF
+-#include "pcre2_jit_neon_inc.h"
++#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
++# define FF_UTF
++# include "pcre2_jit_neon_inc.h"
++# undef FF_UTF
++#endif
+ #undef FFCS
+-#undef FF_UTF
+ 
+ #define FFCS_2
+ #include "pcre2_jit_neon_inc.h"
+-#define FF_UTF
+-#include "pcre2_jit_neon_inc.h"
+-#undef FF_UTF
++#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
++# define FF_UTF
++# include "pcre2_jit_neon_inc.h"
++# undef FF_UTF
++#endif
+ #undef FFCS_2
+ 
+ #define FFCS_MASK
+ #include "pcre2_jit_neon_inc.h"
+-#define FF_UTF
+-#include "pcre2_jit_neon_inc.h"
+-#undef FF_UTF
++#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
++# define FF_UTF
++# include "pcre2_jit_neon_inc.h"
++# undef FF_UTF
++#endif
+ #undef FFCS_MASK
+ 
+ #define JIT_HAS_FAST_FORWARD_CHAR_SIMD 1
+@@ -842,6 +851,29 @@
+ #endif
+ }
+ 
++/* ARM doesn't have a shift left across lanes. */
++static SLJIT_INLINE vect_t shift_left_n_lanes(vect_t a, sljit_u8 n)
++{
++vect_t zero = VDUPQ(0);
++SLJIT_ASSERT(0 < n && n < VECTOR_FACTOR);
++/* VEXTQ takes an immediate as last argument. */
++#define C(X) case X: return VEXTQ(zero, a, VECTOR_FACTOR - X);
++switch (n)
++  {
++  C(1); C(2); C(3);
++#if PCRE2_CODE_UNIT_WIDTH != 32
++  C(4); C(5); C(6); C(7);
++# if PCRE2_CODE_UNIT_WIDTH != 16
++  C(8); C(9); C(10); C(11); C(12); C(13); C(14); C(15);
++# endif
++#endif
++  default:
++    /* Based on the ASSERT(0 < n && n < VECTOR_FACTOR) above, this won't
++       happen. The return is still here for compilers to not warn. */
++    return a;
++  }
++}
++
+ #define FFCPS
+ #define FFCPS_DIFF1
+ #define FFCPS_CHAR1A2A
+@@ -848,9 +880,11 @@
+ 
+ #define FFCPS_0
+ #include "pcre2_jit_neon_inc.h"
+-#define FF_UTF
+-#include "pcre2_jit_neon_inc.h"
+-#undef FF_UTF
++#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
++# define FF_UTF
++# include "pcre2_jit_neon_inc.h"
++# undef FF_UTF
++#endif
+ #undef FFCPS_0
+ 
+ #undef FFCPS_CHAR1A2A
+@@ -857,9 +891,11 @@
+ 
+ #define FFCPS_1
+ #include "pcre2_jit_neon_inc.h"
+-#define FF_UTF
+-#include "pcre2_jit_neon_inc.h"
+-#undef FF_UTF
++#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
++# define FF_UTF
++# include "pcre2_jit_neon_inc.h"
++# undef FF_UTF
++#endif
+ #undef FFCPS_1
+ 
+ #undef FFCPS_DIFF1
+@@ -866,9 +902,11 @@
+ 
+ #define FFCPS_DEFAULT
+ #include "pcre2_jit_neon_inc.h"
+-#define FF_UTF
+-#include "pcre2_jit_neon_inc.h"
+-#undef FF_UTF
++#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
++# define FF_UTF
++# include "pcre2_jit_neon_inc.h"
++# undef FF_UTF
++#endif
+ #undef FFCPS
+ 
+ #define JIT_HAS_FAST_FORWARD_CHAR_PAIR_SIMD 1

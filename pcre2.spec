@@ -6,7 +6,7 @@
 %bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-%global rcversion RC1
+%global rcversion RC2
 Name:       pcre2
 Version:    10.34
 Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
@@ -51,6 +51,10 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# Fix an infinite loop in 64-bit ARM JIT with NEON instructions,
+# proposed to upstream
+# <https://lists.exim.org/lurker/message/20191111.150436.ac8d8581.en.html>
+Patch1:     pcre2-10.34-RC2-fix_a_loop_in_neon_arm64_jit.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -129,6 +133,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
+%patch1 -p0
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -226,6 +231,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Nov 07 2019 Petr Pisar <ppisar@redhat.com> - 10.34-0.1.RC2
+- 10.34-RC2 bump
+- Fix an infinite loop in 64-bit ARM JIT with NEON instructions
+
 * Wed Oct 30 2019 Petr Pisar <ppisar@redhat.com> - 10.34-0.1.RC1
 - 10.34-RC1 bump
 
