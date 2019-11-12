@@ -52,7 +52,7 @@ Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
 # Fix an infinite loop in 64-bit ARM JIT with NEON instructions,
-# proposed to upstream
+# in upstream after 10.34-RC2
 # <https://lists.exim.org/lurker/message/20191111.150436.ac8d8581.en.html>
 Patch1:     pcre2-10.34-RC2-fix_a_loop_in_neon_arm64_jit.patch
 BuildRequires:  autoconf
