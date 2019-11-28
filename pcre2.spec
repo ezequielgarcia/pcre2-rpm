@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.34
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,6 +51,9 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# Fix JIT to respect NOTEMPTY options, upstream bug #2473,
+# in upstream after 10.34
+Patch1:     pcre-10.34-Use-PCRE2_MATCH_EMPTY-flag-to-detect-empty-matches-i.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -129,6 +132,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
+%patch1 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -226,6 +230,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Nov 28 2019 Petr Pisar <ppisar@redhat.com> - 10.34-2
+- Fix JIT to respect NOTEMPTY options (upstream bug #2473)
+
 * Fri Nov 22 2019 Petr Pisar <ppisar@redhat.com> - 10.34-1
 - 10.34 bump
 
