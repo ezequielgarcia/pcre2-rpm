@@ -53,7 +53,7 @@ Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 Patch0:     pcre2-10.10-Fix-multilib.patch
 # Fix JIT to respect NOTEMPTY options, upstream bug #2473,
 # in upstream after 10.34
-Patch1:     pcre-10.34-Use-PCRE2_MATCH_EMPTY-flag-to-detect-empty-matches-i.patch
+Patch1:     pcre2-10.34-Use-PCRE2_MATCH_EMPTY-flag-to-detect-empty-matches-i.patch
 # Fix a crash in pcre2_jit_compile when passing a NULL code argument,
 # upstream bug #2487, in upsream after 10.34
 Patch2:     pcre2-10.34-Fix-the-too-early-access-of-the-fields-of-a-compiled.patch
