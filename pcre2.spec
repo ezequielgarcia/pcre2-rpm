@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.34
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}.1
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -238,7 +238,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
-* Mon Jan 13 2020 Petr Pisar <ppisar@redhat.com> - 10.34-3.1
+* Mon Jan 13 2020 Petr Pisar <ppisar@redhat.com> - 10.34-4
 - Fix a crash in JITted code when a *THEN verb is used in a lookahead assertion
   (upstream bug #2510)
 
