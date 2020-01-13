@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.34
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}.1
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -57,6 +57,9 @@ Patch1:     pcre2-10.34-Use-PCRE2_MATCH_EMPTY-flag-to-detect-empty-matches-i.pat
 # Fix a crash in pcre2_jit_compile when passing a NULL code argument,
 # upstream bug #2487, in upsream after 10.34
 Patch2:     pcre2-10.34-Fix-the-too-early-access-of-the-fields-of-a-compiled.patch
+# Fix a crash in JITted code when a *THEN verb is used in a lookahead assertion,
+# upstream bug #2510, in upstream after 10.34
+Patch3:     pcre2-10.34-Fix-THEN-verbs-in-lookahead-assertions-in-JIT.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -137,6 +140,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -234,6 +238,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jan 13 2020 Petr Pisar <ppisar@redhat.com> - 10.34-3.1
+- Fix a crash in JITted code when a *THEN verb is used in a lookahead assertion
+  (upstream bug #2510)
+
 * Mon Dec 09 2019 Petr Pisar <ppisar@redhat.com> - 10.34-3
 - Fix a crash in pcre2_jit_compile when passing a NULL code argument (upstream
   bug #2487)
