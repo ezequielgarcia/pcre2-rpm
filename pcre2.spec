@@ -68,6 +68,9 @@ Patch5:     pcre2-10.34-Ensure-a-newline-after-the-final-line-in-a-file-is-o.pat
 # Fix processing (?(DEFINE)...) within look-behind assertions,
 # in upstream after 10.34
 Patch6:     pcre2-10.34-Fix-bug-in-processing-DEFINE-.-within-lookbehind-ass.patch
+# Prevent from a stack exhaustion when studying a pattern for nested groups by
+# putting a limit of 1000 recursive calls, in upstream after 10.34
+Patch7:     pcre2-10.34-Limit-function-recursion-in-pcre2_study-to-avoid-sta.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -152,6 +155,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -254,6 +258,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Ensure a newline after the final line in a file is output by pcre2grep
   (upstream bug #2513)
 - Fix processing (?(DEFINE)...) within look-behind assertions
+- Prevent from a stack exhaustion when studying a pattern for nested groups by
+  putting a limit of 1000 recursive calls
 
 * Mon Jan 13 2020 Petr Pisar <ppisar@redhat.com> - 10.34-4
 - Fix a crash in JITted code when a *THEN verb is used in a lookahead assertion
