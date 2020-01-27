@@ -62,6 +62,9 @@ Patch2:     pcre2-10.34-Fix-the-too-early-access-of-the-fields-of-a-compiled.pat
 Patch3:     pcre2-10.34-Fix-THEN-verbs-in-lookahead-assertions-in-JIT.patch
 # Fix a memory leak when allocating a JIT stack fails, in upstream after 10.34
 Patch4:     pcre2-10.34-The-JIT-stack-should-be-freed-when-the-low-level-sta.patch
+# Ensure a newline after the final line in a file is output by pcre2grep,
+# upstream bug #2513, in upstream after 10.34
+Patch5:     pcre2-10.34-Ensure-a-newline-after-the-final-line-in-a-file-is-o.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -144,6 +147,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -243,6 +247,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 %changelog
 * Mon Jan 27 2020 Petr Pisar <ppisar@redhat.com> - 10.34-5
 - Fix a memory leak when allocating a JIT stack fails
+- Ensure a newline after the final line in a file is output by pcre2grep
+  (upstream bug #2513)
 
 * Mon Jan 13 2020 Petr Pisar <ppisar@redhat.com> - 10.34-4
 - Fix a crash in JITted code when a *THEN verb is used in a lookahead assertion
