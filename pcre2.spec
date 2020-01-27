@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.34
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -60,6 +60,8 @@ Patch2:     pcre2-10.34-Fix-the-too-early-access-of-the-fields-of-a-compiled.pat
 # Fix a crash in JITted code when a *THEN verb is used in a lookahead assertion,
 # upstream bug #2510, in upstream after 10.34
 Patch3:     pcre2-10.34-Fix-THEN-verbs-in-lookahead-assertions-in-JIT.patch
+# Fix a memory leak when allocating a JIT stack fails, in upstream after 10.34
+Patch4:     pcre2-10.34-The-JIT-stack-should-be-freed-when-the-low-level-sta.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -141,6 +143,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -238,6 +241,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Jan 27 2020 Petr Pisar <ppisar@redhat.com> - 10.34-5
+- Fix a memory leak when allocating a JIT stack fails
+
 * Mon Jan 13 2020 Petr Pisar <ppisar@redhat.com> - 10.34-4
 - Fix a crash in JITted code when a *THEN verb is used in a lookahead assertion
   (upstream bug #2510)
