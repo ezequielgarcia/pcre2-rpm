@@ -71,7 +71,7 @@ Patch6:     pcre2-10.34-Fix-bug-in-processing-DEFINE-.-within-lookbehind-ass.pat
 # Prevent from a stack exhaustion when studying a pattern for nested groups by
 # putting a limit of 1000 recursive calls, in upstream after 10.34
 Patch7:     pcre2-10.34-Limit-function-recursion-in-pcre2_study-to-avoid-sta.patch
-# Fix restoring a verb chaing list when exiting a JIT-compiled recursive
+# Fix restoring a verb chain list when exiting a JIT-compiled recursive
 # function, in upstream after 10.34
 Patch8:     pcre2-10.34-Fix-control-verb-chain-restoration-issue-in-JIT.patch
 BuildRequires:  autoconf
@@ -258,7 +258,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 
 %changelog
 * Mon Feb 17 2020 Petr Pisar <ppisar@redhat.com> - 10.34-6
-- Fix restoring a verb chaing list when exiting a JIT-compiled recursive
+- Fix restoring a verb chain list when exiting a JIT-compiled recursive
   function
 
 * Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 10.34-5.1
