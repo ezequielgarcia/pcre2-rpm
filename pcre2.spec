@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.34
-Release:    %{?rcversion:0.}6%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -74,6 +74,9 @@ Patch7:     pcre2-10.34-Limit-function-recursion-in-pcre2_study-to-avoid-sta.pat
 # Fix restoring a verb chain list when exiting a JIT-compiled recursive
 # function, in upstream after 10.34
 Patch8:     pcre2-10.34-Fix-control-verb-chain-restoration-issue-in-JIT.patch
+# Fix a crash in JIT when an invalid UTF-8 character is encountered in
+# match_invalid_utf mode, upstream bug #2529, in upstream after 10.34
+Patch9:     pcre2-10.34-Fix-a-crash-which-occurs-when-the-character-type-of-.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -160,6 +163,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -257,6 +261,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Feb 20 2020 Petr Pisar <ppisar@redhat.com> - 10.34-7
+- Fix a crash in JIT when an invalid UTF-8 character is encountered in
+  match_invalid_utf mode (upstream bug #2529)
+
 * Mon Feb 17 2020 Petr Pisar <ppisar@redhat.com> - 10.34-6
 - Fix restoring a verb chain list when exiting a JIT-compiled recursive
   function

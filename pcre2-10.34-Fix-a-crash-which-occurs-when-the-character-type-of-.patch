@@ -1,0 +1,49 @@
+From 5446ab8fa22b7e685c01cbfc5a673d2c7f994c93 Mon Sep 17 00:00:00 2001
+From: zherczeg <zherczeg@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 20 Feb 2020 07:42:47 +0000
+Subject: [PATCH] Fix a crash which occurs when the character type of an
+ invalid UTF character is decoded in JIT.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@1221 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.34.
+---
+ src/pcre2_jit_compile.c | 6 ++++++
+ src/pcre2_jit_test.c    | 2 ++
+
+diff --git a/src/pcre2_jit_compile.c b/src/pcre2_jit_compile.c
+index 10665a8..ef29a76 100644
+--- a/src/pcre2_jit_compile.c
++++ b/src/pcre2_jit_compile.c
+@@ -7224,7 +7224,13 @@ cc = ccbegin;
+ if ((cc[-1] & XCL_NOT) != 0)
+   read_char(common, min, max, backtracks, READ_CHAR_UPDATE_STR_PTR);
+ else
++  {
++#ifdef SUPPORT_UNICODE
++  read_char(common, min, max, (needstype || needsscript) ? backtracks : NULL, 0);
++#else /* !SUPPORT_UNICODE */
+   read_char(common, min, max, NULL, 0);
++#endif /* SUPPORT_UNICODE */
++  }
+ 
+ if ((cc[-1] & XCL_HASPROP) == 0)
+   {
+diff --git a/src/pcre2_jit_test.c b/src/pcre2_jit_test.c
+index 187e565..619e738 100644
+--- a/src/pcre2_jit_test.c
++++ b/src/pcre2_jit_test.c
+@@ -1965,6 +1965,8 @@ static struct invalid_utf8_regression_test_case invalid_utf8_regression_test_cas
+ 	{ PCRE2_UTF, CI, 0, 0, 0, 4, 8, { "#\xc7\x85#", NULL }, "\x80\x80#\xc7#\xc7\x85#" },
+ 	{ PCRE2_UTF, CI, 0, 0, 0, 7, 11, { "#\xc7\x85#", NULL }, "\x80\x80#\xc7\x80\x80\x80#\xc7\x85#" },
+ 
++	{ PCRE2_UTF | PCRE2_UCP, CI, 0, 0, 0, -1, -1, { "[\\s]", NULL }, "\xed\xa0\x80" },
++
+ 	/* These two are not invalid UTF tests, but this infrastructure fits better for them. */
+ 	{ 0, PCRE2_JIT_COMPLETE, 0, 0, 1, -1, -1, { "\\X{2}", NULL }, "\r\n\n" },
+ 	{ 0, PCRE2_JIT_COMPLETE, 0, 0, 1, -1, -1, { "\\R{2}", NULL }, "\r\n\n" },
+-- 
+2.21.1
+
