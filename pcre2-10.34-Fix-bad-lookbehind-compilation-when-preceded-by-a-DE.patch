@@ -1,0 +1,60 @@
+From 5bf35f661b7a73e892f6181f22988e5531960501 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Mon, 24 Feb 2020 17:29:00 +0000
+Subject: [PATCH] Fix bad lookbehind compilation when preceded by a DEFINE
+ group.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@1228 6239d852-aaf2-0410-a92c-79f79f948069
+Petr Písař: Ported to 10.34.
+---
+ src/pcre2_compile.c  | 4 ++++
+ testdata/testinput1  | 3 +++
+ testdata/testoutput1 | 4 ++++
+ 3 files changed, 11 insertions(+)
+
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index 628503c..8083338 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -9588,6 +9588,10 @@ for (; *pptr != META_END; pptr++)
+     break;
+ 
+     case META_COND_DEFINE:
++    pptr += SIZEOFFSET;
++    nestlevel++;
++    break;
++
+     case META_COND_NAME:
+     case META_COND_NUMBER:
+     case META_COND_RNAME:
+diff --git a/testdata/testinput1 b/testdata/testinput1
+index 959d4b8..6135681 100644
+--- a/testdata/testinput1
++++ b/testdata/testinput1
+@@ -6399,4 +6399,7 @@ ef) x/x,mark
+ "(?<=X(?(DEFINE)(Y))(?1))."
+     AXYZ
+ 
++"(?(DEFINE)(?<foo>bar))(?<![-a-z0-9])word"
++    word
++
+ # End of testinput1 
+diff --git a/testdata/testoutput1 b/testdata/testoutput1
+index dfb6366..ca23e91 100644
+--- a/testdata/testoutput1
++++ b/testdata/testoutput1
+@@ -10129,4 +10129,8 @@ No match
+     AXYZ
+  0: Z
+ 
++"(?(DEFINE)(?<foo>bar))(?<![-a-z0-9])word"
++    word
++ 0: word
++
+ # End of testinput1 
+-- 
+2.21.1
+

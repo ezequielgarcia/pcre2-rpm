@@ -81,6 +81,9 @@ Patch9:     pcre2-10.34-Fix-a-crash-which-occurs-when-the-character-type-of-.pat
 # is not followed by a valid low surrogate, upstream bug #2527,
 # in upstream after 10.34
 Patch10:    pcre2-10.34-Fix-bug-in-UTF-16-checker-returning-wrong-offset-for.patch
+# Fix compiling a lookbehind when preceded by a DEFINE group,
+# upstream bug #2531, in upstream after 10.34
+Patch11:    pcre2-10.34-Fix-bad-lookbehind-compilation-when-preceded-by-a-DE.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -169,6 +172,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -269,6 +273,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Mon Mar 16 2020 Petr Pisar <ppisar@redhat.com> - 10.34-8
 - Fix computing an offest for the start of the UTF-16 error when a high
   surrogate is not followed by a valid low surrogate (upstream bug #2527)
+- Fix compiling a lookbehind when preceded by a DEFINE group
+  (upstream bug #2531)
 
 * Thu Feb 20 2020 Petr Pisar <ppisar@redhat.com> - 10.34-7
 - Fix a crash in JIT when an invalid UTF-8 character is encountered in
