@@ -94,6 +94,7 @@ BuildRequires:  make
 %if %{with pcre2_enables_readline}
 BuildRequires:  readline-devel
 %endif
+Requires:       %{name}-syntax = %{version}-%{release}
 Provides:       bundled(sljit)
 
 %description
@@ -117,6 +118,7 @@ restricted, and does not give full access to all of PCRE2's facilities.
 %package utf16
 Summary:    UTF-16 variant of PCRE2
 Provides:   bundled(sljit)
+Requires:   %{name}-syntax = %{version}-%{release}
 Conflicts:  %{name}%{?_isa} < 10.21-4
 
 %description utf16
@@ -125,6 +127,7 @@ This is PCRE2 library working on UTF-16 strings.
 %package utf32
 Summary:    UTF-32 variant of PCRE2
 Provides:   bundled(sljit)
+Requires:   %{name}-syntax = %{version}-%{release}
 Conflicts:  %{name}%{?_isa} < 10.21-4
 
 %description utf32
@@ -148,6 +151,15 @@ Provides:   bundled(sljit)
 
 %description static
 Library for static linking for %{name}.
+
+%package syntax
+Summary:    Documentation for PCRE2 regular expressions
+BuildArch:  noarch
+Conflicts:  %{name}-devel < 10.34-8
+
+%description syntax
+This is a set of manual pages that document a syntax of the regular
+expressions implemented by the PCRE2 library.
 
 %package tools
 Summary:    Auxiliary utilities for %{name}
@@ -236,25 +248,28 @@ make %{?_smp_mflags} check VERBOSE=yes
 %files
 %{_libdir}/libpcre2-8.so.0*
 %{_libdir}/libpcre2-posix.so.2*
-%license COPYING LICENCE
-%doc AUTHORS ChangeLog NEWS
 
 %files utf16
 %{_libdir}/libpcre2-16.so.0*
-%license COPYING LICENCE
-%doc AUTHORS ChangeLog NEWS
 
 %files utf32
 %{_libdir}/libpcre2-32.so.0*
-%license COPYING LICENCE
-%doc AUTHORS ChangeLog NEWS
 
 %files devel
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*
 %{_includedir}/*.h
 %{_mandir}/man1/pcre2-config.*
-%{_mandir}/man3/*
+%{_mandir}/man3/pcre2_*
+%{_mandir}/man3/pcre2api.*
+%{_mandir}/man3/pcre2build.*
+%{_mandir}/man3/pcre2callout.*
+%{_mandir}/man3/pcre2convert.*
+%{_mandir}/man3/pcre2demo.*
+%{_mandir}/man3/pcre2jit.*
+%{_mandir}/man3/pcre2posix.*
+%{_mandir}/man3/pcre2sample.*
+%{_mandir}/man3/pcre2serialize*
 %{_bindir}/pcre2-config
 %doc doc/*.txt doc/html
 %doc README HACKING ./src/pcre2demo.c
@@ -262,6 +277,19 @@ make %{?_smp_mflags} check VERBOSE=yes
 %files static
 %{_libdir}/*.a
 %license COPYING LICENCE
+
+%files syntax
+%license COPYING LICENCE
+%doc AUTHORS ChangeLog NEWS
+%{_mandir}/man3/pcre2.*
+%{_mandir}/man3/pcre2compat.*
+%{_mandir}/man3/pcre2limits.*
+%{_mandir}/man3/pcre2matching.*
+%{_mandir}/man3/pcre2partial.*
+%{_mandir}/man3/pcre2pattern.*
+%{_mandir}/man3/pcre2perform.*
+%{_mandir}/man3/pcre2syntax.*
+%{_mandir}/man3/pcre2unicode.*
 
 %files tools
 %{_bindir}/pcre2grep
@@ -275,6 +303,8 @@ make %{?_smp_mflags} check VERBOSE=yes
   surrogate is not followed by a valid low surrogate (upstream bug #2527)
 - Fix compiling a lookbehind when preceded by a DEFINE group
   (upstream bug #2531)
+- Make manual pages about pattern syntax available when the library is
+  installed (bug #1808612)
 
 * Thu Feb 20 2020 Petr Pisar <ppisar@redhat.com> - 10.34-7
 - Fix a crash in JIT when an invalid UTF-8 character is encountered in
