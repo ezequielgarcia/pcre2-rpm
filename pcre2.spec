@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.34
-Release:    %{?rcversion:0.}8%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}9%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -84,6 +84,9 @@ Patch10:    pcre2-10.34-Fix-bug-in-UTF-16-checker-returning-wrong-offset-for.pat
 # Fix compiling a lookbehind when preceded by a DEFINE group,
 # upstream bug #2531, in upstream after 10.34
 Patch11:    pcre2-10.34-Fix-bad-lookbehind-compilation-when-preceded-by-a-DE.patch
+# Fix a JIT compilation of the Unicode scripts in the extended character classes,
+# upstream bug #2432, in upstream after 10.34
+Patch12:    pcre2-10.34-Remove-hackings-in-JIT.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -185,6 +188,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch9 -p1
 %patch10 -p1
 %patch11 -p1
+%patch12 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -298,6 +302,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Mar 23 2020 Petr Pisar <ppisar@redhat.com> - 10.34-9
+- Fix a JIT compilation of the Unicode scripts in the extended character classes
+  (upstream bug #2432)
+
 * Mon Mar 16 2020 Petr Pisar <ppisar@redhat.com> - 10.34-8
 - Fix computing an offest for the start of the UTF-16 error when a high
   surrogate is not followed by a valid low surrogate (upstream bug #2527)
