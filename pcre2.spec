@@ -6,10 +6,10 @@
 %bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.34
-Release:    %{?rcversion:0.}9%{?rcversion:.%rcversion}%{?dist}
+Version:    10.35
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,42 +51,6 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# Fix JIT to respect NOTEMPTY options, upstream bug #2473,
-# in upstream after 10.34
-Patch1:     pcre2-10.34-Use-PCRE2_MATCH_EMPTY-flag-to-detect-empty-matches-i.patch
-# Fix a crash in pcre2_jit_compile when passing a NULL code argument,
-# upstream bug #2487, in upstream after 10.34
-Patch2:     pcre2-10.34-Fix-the-too-early-access-of-the-fields-of-a-compiled.patch
-# Fix a crash in JITted code when a *THEN verb is used in a lookahead assertion,
-# upstream bug #2510, in upstream after 10.34
-Patch3:     pcre2-10.34-Fix-THEN-verbs-in-lookahead-assertions-in-JIT.patch
-# Fix a memory leak when allocating a JIT stack fails, in upstream after 10.34
-Patch4:     pcre2-10.34-The-JIT-stack-should-be-freed-when-the-low-level-sta.patch
-# Ensure a newline after the final line in a file is output by pcre2grep,
-# upstream bug #2513, in upstream after 10.34
-Patch5:     pcre2-10.34-Ensure-a-newline-after-the-final-line-in-a-file-is-o.patch
-# Fix processing (?(DEFINE)...) within look-behind assertions,
-# in upstream after 10.34
-Patch6:     pcre2-10.34-Fix-bug-in-processing-DEFINE-.-within-lookbehind-ass.patch
-# Prevent from a stack exhaustion when studying a pattern for nested groups by
-# putting a limit of 1000 recursive calls, in upstream after 10.34
-Patch7:     pcre2-10.34-Limit-function-recursion-in-pcre2_study-to-avoid-sta.patch
-# Fix restoring a verb chain list when exiting a JIT-compiled recursive
-# function, in upstream after 10.34
-Patch8:     pcre2-10.34-Fix-control-verb-chain-restoration-issue-in-JIT.patch
-# Fix a crash in JIT when an invalid UTF-8 character is encountered in
-# match_invalid_utf mode, upstream bug #2529, in upstream after 10.34
-Patch9:     pcre2-10.34-Fix-a-crash-which-occurs-when-the-character-type-of-.patch
-# Fix computing an offest for the start of the UTF-16 error when a high surrogate
-# is not followed by a valid low surrogate, upstream bug #2527,
-# in upstream after 10.34
-Patch10:    pcre2-10.34-Fix-bug-in-UTF-16-checker-returning-wrong-offset-for.patch
-# Fix compiling a lookbehind when preceded by a DEFINE group,
-# upstream bug #2531, in upstream after 10.34
-Patch11:    pcre2-10.34-Fix-bad-lookbehind-compilation-when-preceded-by-a-DE.patch
-# Fix a JIT compilation of the Unicode scripts in the extended character classes,
-# upstream bug #2432, in upstream after 10.34
-Patch12:    pcre2-10.34-Remove-hackings-in-JIT.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -97,6 +61,7 @@ BuildRequires:  make
 %if %{with pcre2_enables_readline}
 BuildRequires:  readline-devel
 %endif
+BuildRequires:  sed
 Requires:       %{name}-syntax = %{version}-%{release}
 Provides:       bundled(sljit)
 
@@ -177,23 +142,15 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
 
 %build
+# Shadow stack built-in functions are required for -fcf-protection.
+# Checked in src/sljit/sljitConfigInternal.h, _get_ssp() is used.
+%global optflags %(printf -- '%s' '%{optflags}' | \
+    sed -E 's/(^|\\s)(-fcf-protection)($|\\s)/\\1\\2\\3 -mshstk /')
 # There is a strict-aliasing problem on PPC64, bug #881232
 %ifarch ppc64
 %global optflags %{optflags} -fno-strict-aliasing
@@ -302,6 +259,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Apr 16 2020 Petr Pisar <ppisar@redhat.com> - 10.35-0.1.RC1
+- 10.35-RC1 bump
+
 * Mon Mar 23 2020 Petr Pisar <ppisar@redhat.com> - 10.34-9
 - Fix a JIT compilation of the Unicode scripts in the extended character classes
   (upstream bug #2432)
