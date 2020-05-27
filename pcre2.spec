@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.35
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,6 +51,12 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# 1/2 Enable shadow stack built-in functions if -fcf-protection compiler flag is
+# used, upstream bug #2578, in upstream after 10.35
+Patch1:     pcre2-10.35-Apply-H.J.-Lu-s-patch-to-pass-mshstk-to-the-compiler.patch
+# 2/2 Enable shadow stack built-in functions if -fcf-protection compiler flag is
+# used, upstream bug #2578, in upstream after 10.35
+Patch2:     pcre2-10.35-Fix-previous-commit-include-CET_CFLAGS-in-16-bit-and.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -142,15 +148,13 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
 
 %build
-# Shadow stack built-in functions are required for -fcf-protection.
-# Checked in src/sljit/sljitConfigInternal.h, _get_ssp() is used.
-%global optflags %(printf -- '%s' '%{optflags}' | \
-    sed -E 's/(^|\\s)(-fcf-protection)($|\\s)/\\1\\2\\3 -mshstk /')
 # There is a strict-aliasing problem on PPC64, bug #881232
 %ifarch ppc64
 %global optflags %{optflags} -fno-strict-aliasing
@@ -259,6 +263,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed May 27 2020 Petr Pisar <ppisar@redhat.com> - 10.35-2
+- Enable shadow stack built-in functions if -fcf-protection compiler flag is
+  used by patching a build script (upstream bug #2578)
+
 * Mon May 11 2020 Petr Pisar <ppisar@redhat.com> - 10.35-1
 - 10.35 bump
 
