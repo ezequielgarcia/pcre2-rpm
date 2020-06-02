@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.35
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -57,6 +57,9 @@ Patch1:     pcre2-10.35-Apply-H.J.-Lu-s-patch-to-pass-mshstk-to-the-compiler.pat
 # 2/2 Enable shadow stack built-in functions if -fcf-protection compiler flag is
 # used, upstream bug #2578, in upstream after 10.35
 Patch2:     pcre2-10.35-Fix-previous-commit-include-CET_CFLAGS-in-16-bit-and.patch
+# Fix an infinite loop when a single-byte newline is search in JIT if an
+# invalid UTF-8 mode is enabled, upstream bug #2581, in upstream after 10.35
+Patch3:     pcre2-10.35-Fix-inifinite-loop-when-a-single-byte-newline-is-sea.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -150,6 +153,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -263,6 +267,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Jun 02 2020 Petr Pisar <ppisar@redhat.com> - 10.35-3
+- Fix an infinite loop when a single-byte newline is search in JIT if an
+  invalid UTF-8 mode is enabled (upstream bug #2581)
+
 * Wed May 27 2020 Petr Pisar <ppisar@redhat.com> - 10.35-2
 - Enable shadow stack built-in functions if -fcf-protection compiler flag is
   used by patching a build script (upstream bug #2578)
