@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.35
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -60,6 +60,10 @@ Patch2:     pcre2-10.35-Fix-previous-commit-include-CET_CFLAGS-in-16-bit-and.pat
 # Fix an infinite loop when a single-byte newline is search in JIT if an
 # invalid UTF-8 mode is enabled, upstream bug #2581, in upstream after 10.35
 Patch3:     pcre2-10.35-Fix-inifinite-loop-when-a-single-byte-newline-is-sea.patch
+# Fix a buffer overread when parsing an unterminated VERSION condition with
+# a single-digit minor number at the end of a regular expression,
+# ClusterFuzz #23779, in upstream after 10.35
+Patch4:     pcre2-10.35-Fix-read-overflow-for-invalid-VERSION-test-with-one-.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -154,6 +158,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -267,6 +272,11 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Jul 15 2020 Petr Pisar <ppisar@redhat.com> - 10.35-4
+- Fix a buffer overread when parsing an unterminated VERSION condition with
+  a single-digit minor number at the end of a regular expression
+  (ClusterFuzz #23779)
+
 * Tue Jun 02 2020 Petr Pisar <ppisar@redhat.com> - 10.35-3
 - Fix an infinite loop when a single-byte newline is search in JIT if an
   invalid UTF-8 mode is enabled (upstream bug #2581)
