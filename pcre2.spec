@@ -64,6 +64,9 @@ Patch3:     pcre2-10.35-Fix-inifinite-loop-when-a-single-byte-newline-is-sea.pat
 # a single-digit minor number at the end of a regular expression,
 # ClusterFuzz #23779, in upstream after 10.35
 Patch4:     pcre2-10.35-Fix-read-overflow-for-invalid-VERSION-test-with-one-.patch
+# Fix an early fail optimization with character ranges and a buffer overread
+# in JIT, upstream bug #2621, in upstream after 10.35
+Patch5:     pcre2-10.35-Fix-an-early-fail-optimization-issue-and-a-buffer-ov.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -159,6 +162,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -276,6 +280,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 - Fix a buffer overread when parsing an unterminated VERSION condition with
   a single-digit minor number at the end of a regular expression
   (ClusterFuzz #23779)
+- Fix an early fail optimization with character ranges and a buffer overread
+  in JIT (upstream bug #2621)
 
 * Tue Jun 02 2020 Petr Pisar <ppisar@redhat.com> - 10.35-3
 - Fix an infinite loop when a single-byte newline is search in JIT if an
