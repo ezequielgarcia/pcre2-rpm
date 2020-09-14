@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.35
-Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}.1
+Release:    %{?rcversion:0.}5%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -67,6 +67,8 @@ Patch4:     pcre2-10.35-Fix-read-overflow-for-invalid-VERSION-test-with-one-.pat
 # Fix an early fail optimization with character ranges and a buffer overread
 # in JIT, upstream bug #2621, in upstream after 10.35
 Patch5:     pcre2-10.35-Fix-an-early-fail-optimization-issue-and-a-buffer-ov.patch
+# Fix escaping test data, upstream bug #2641, in upstream after 10.35
+Patch6:     pcre2-10.35-Fix-delimiters-in-tests-1-and-4-for-correct-Perl-beh.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -163,6 +165,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -276,6 +279,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Sep 14 2020 Petr Pisar <ppisar@redhat.com> - 10.35-5
+- Fix escaping test data (upstream bug #2641)
+
 * Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 10.35-4.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
