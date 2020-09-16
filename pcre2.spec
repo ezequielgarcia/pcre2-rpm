@@ -72,6 +72,9 @@ Patch6:     pcre2-10.35-Fix-delimiters-in-tests-1-and-4-for-correct-Perl-beh.pat
 # Fix escaping test data and only allow slash delimiter after perltest pragma,
 # upstream bug #2641, in upstream after 10.35
 Patch7:     pcre2-10.35-Update-pcre2test-to-check-delimiters-after-perltest-.patch
+# Fix a mismatch when caselessly searching in an invalid UTF-8 text and a start
+# optimization is enabled, upstream bug #2642, in upstream after 10.35
+Patch8:     pcre2-10.35-Fix-Bugzilla-2642-no-match-bug-in-8-bit-mode-for-cas.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -170,6 +173,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -286,6 +290,8 @@ make %{?_smp_mflags} check VERBOSE=yes
 * Wed Sep 16 2020 Petr Pisar <ppisar@redhat.com> - 10.35-6
 - Fix escaping test data and only allow slash delimiter after perltest pragma
   (upstream bug #2641)
+- Fix a mismatch when caselessly searching in an invalid UTF-8 text and a start
+  optimization is enabled (upstream bug #2642)
 
 * Mon Sep 14 2020 Petr Pisar <ppisar@redhat.com> - 10.35-5
 - Fix escaping test data (upstream bug #2641)
