@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.35
-Release:    %{?rcversion:0.}7%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}8%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -78,6 +78,9 @@ Patch8:     pcre2-10.35-Fix-Bugzilla-2642-no-match-bug-in-8-bit-mode-for-cas.pat
 # Fix matching a character set when JIT is enabled and both Unicode script and
 # Unicode class are present, upstream bug #2644, in upstream after 10.35
 Patch9:     pcre2-10.35-Fixed-a-bug-in-character-set-matching-when-JIT-is-en.patch
+# Fix a partial matching for a word boundary in JIT mode, upstream bug #2663,
+# in upstream after 10.35.
+Patch10:    pcre2-10.35-Fixed-a-word-boundary-check-bug-in-JIT-when-partial-.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -178,6 +181,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -291,6 +295,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Oct 27 2020 Petr Pisar <ppisar@redhat.com> - 10.35-8
+- Fix a partial matching for a word boundary in JIT mode (upstream bug #2663)
+
 * Mon Sep 21 2020 Petr Pisar <ppisar@redhat.com> - 10.35-7
 - Fix matching a character set when JIT is enabled and both Unicode script and
   Unicode class are present (upstream bug #2644)
