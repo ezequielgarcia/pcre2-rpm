@@ -6,10 +6,10 @@
 %bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-#%%global rcversion RC1
+%global rcversion RC1
 Name:       pcre2
-Version:    10.35
-Release:    %{?rcversion:0.}8%{?rcversion:.%rcversion}%{?dist}
+Version:    10.36
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,36 +51,6 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# 1/2 Enable shadow stack built-in functions if -fcf-protection compiler flag is
-# used, upstream bug #2578, in upstream after 10.35
-Patch1:     pcre2-10.35-Apply-H.J.-Lu-s-patch-to-pass-mshstk-to-the-compiler.patch
-# 2/2 Enable shadow stack built-in functions if -fcf-protection compiler flag is
-# used, upstream bug #2578, in upstream after 10.35
-Patch2:     pcre2-10.35-Fix-previous-commit-include-CET_CFLAGS-in-16-bit-and.patch
-# Fix an infinite loop when a single-byte newline is search in JIT if an
-# invalid UTF-8 mode is enabled, upstream bug #2581, in upstream after 10.35
-Patch3:     pcre2-10.35-Fix-inifinite-loop-when-a-single-byte-newline-is-sea.patch
-# Fix a buffer overread when parsing an unterminated VERSION condition with
-# a single-digit minor number at the end of a regular expression,
-# ClusterFuzz #23779, in upstream after 10.35
-Patch4:     pcre2-10.35-Fix-read-overflow-for-invalid-VERSION-test-with-one-.patch
-# Fix an early fail optimization with character ranges and a buffer overread
-# in JIT, upstream bug #2621, in upstream after 10.35
-Patch5:     pcre2-10.35-Fix-an-early-fail-optimization-issue-and-a-buffer-ov.patch
-# Fix escaping test data, upstream bug #2641, in upstream after 10.35
-Patch6:     pcre2-10.35-Fix-delimiters-in-tests-1-and-4-for-correct-Perl-beh.patch
-# Fix escaping test data and only allow slash delimiter after perltest pragma,
-# upstream bug #2641, in upstream after 10.35
-Patch7:     pcre2-10.35-Update-pcre2test-to-check-delimiters-after-perltest-.patch
-# Fix a mismatch when caselessly searching in an invalid UTF-8 text and a start
-# optimization is enabled, upstream bug #2642, in upstream after 10.35
-Patch8:     pcre2-10.35-Fix-Bugzilla-2642-no-match-bug-in-8-bit-mode-for-cas.patch
-# Fix matching a character set when JIT is enabled and both Unicode script and
-# Unicode class are present, upstream bug #2644, in upstream after 10.35
-Patch9:     pcre2-10.35-Fixed-a-bug-in-character-set-matching-when-JIT-is-en.patch
-# Fix a partial matching for a word boundary in JIT mode, upstream bug #2663,
-# in upstream after 10.35.
-Patch10:    pcre2-10.35-Fixed-a-word-boundary-check-bug-in-JIT-when-partial-.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -172,16 +142,6 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 %{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
 %setup -q -n %{name}-%{myversion}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -295,6 +255,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Nov 09 2020 Petr Pisar <ppisar@redhat.com> - 10.36-0.1.RC1
+- 10.36-RC1 bump
+
 * Tue Oct 27 2020 Petr Pisar <ppisar@redhat.com> - 10.35-8
 - Fix a partial matching for a word boundary in JIT mode (upstream bug #2663)
 
