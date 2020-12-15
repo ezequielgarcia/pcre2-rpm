@@ -6,7 +6,7 @@
 %bcond_with pcre2_enables_sealloc
 
 # This is stable release:
-%global rcversion RC1
+#%%global rcversion RC1
 Name:       pcre2
 Version:    10.36
 Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
@@ -255,6 +255,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Dec 15 2020 Petr Pisar <ppisar@redhat.com> - 10.36-1
+- 10.36 bump
+
 * Mon Nov 09 2020 Petr Pisar <ppisar@redhat.com> - 10.36-0.1.RC1
 - 10.36-RC1 bump
 
