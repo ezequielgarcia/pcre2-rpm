@@ -1,0 +1,59 @@
+From 32e83fc2d59413d13039cc31db1558d9c0e3b874 Mon Sep 17 00:00:00 2001
+From: ph10 <ph10@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Thu, 14 Jan 2021 16:56:44 +0000
+Subject: [PATCH] Get rid of gcc -fanalyzer error (though it was probably a
+ false positive).
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+git-svn-id: svn://vcs.exim.org/pcre2/code/trunk@1293 6239d852-aaf2-0410-a92c-79f79f948069
+Signed-off-by: Petr Písař <ppisar@redhat.com>
+Petr Pisar: Ported to 10.36.
+---
+ src/pcre2_auto_possess.c | 13 +++++++++----
+
+diff --git a/src/pcre2_auto_possess.c b/src/pcre2_auto_possess.c
+index c64cf85..66064ed 100644
+--- a/src/pcre2_auto_possess.c
++++ b/src/pcre2_auto_possess.c
+@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
+ 
+                        Written by Philip Hazel
+      Original API code Copyright (c) 1997-2012 University of Cambridge
+-          New API code Copyright (c) 2016-2020 University of Cambridge
++          New API code Copyright (c) 2016-2021 University of Cambridge
+ 
+ -----------------------------------------------------------------------------
+ Redistribution and use in source and binary forms, with or without
+@@ -490,6 +490,7 @@ switch(c)
+   list[2] = (uint32_t)(end - code);
+   return end;
+   }
++
+ return NULL;    /* Opcode not accepted */
+ }
+ 
+@@ -1186,12 +1187,16 @@ for (;;)
+     c = *repeat_opcode;
+     if (c >= OP_CRSTAR && c <= OP_CRMINRANGE)
+       {
+-      /* end must not be NULL. */
++      /* The return from get_chr_property_list() will never be NULL when
++      *code (aka c) is one of the three class opcodes. However, gcc with 
++      -fanalyzer notes that a NULL return is possible, and grumbles. Hence we 
++      put in a check. */ 
++       
+       end = get_chr_property_list(code, utf, ucp, cb->fcc, list);
+-
+       list[1] = (c & 1) == 0;
+ 
+-      if (compare_opcodes(end, utf, ucp, cb, list, end, &rec_limit))
++      if (end != NULL &&
++          compare_opcodes(end, utf, ucp, cb, list, end, &rec_limit))
+         {
+         switch (c)
+           {
+-- 
+2.26.2
+

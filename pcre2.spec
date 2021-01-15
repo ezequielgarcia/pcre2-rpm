@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.36
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,6 +51,9 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# Fix a possible NULL pointer dereference in auto_possessify(),
+# upstream bug #2686, in upstream after 10.36
+Patch1:     pcre2-10.36-Get-rid-of-gcc-fanalyzer-error-though-it-was-probabl.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -140,8 +143,7 @@ Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
 
 %prep
 %{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
-%setup -q -n %{name}-%{myversion}
-%patch0 -p1
+%autosetup -n %{name}-%{myversion} -p1
 # Because of multilib patch
 libtoolize --copy --force
 autoreconf -vif
@@ -255,6 +257,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Jan 15 2021 Petr Pisar <ppisar@redhat.com> - 10.36-2
+- Fix a possible NULL pointer dereference in auto_possessify()
+  (upstream bug #2686)
+
 * Tue Dec 15 2020 Petr Pisar <ppisar@redhat.com> - 10.36-1
 - 10.36 bump
 
