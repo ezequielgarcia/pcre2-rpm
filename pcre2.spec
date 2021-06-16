@@ -8,8 +8,8 @@
 # This is stable release:
 #%%global rcversion RC1
 Name:       pcre2
-Version:    10.37
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
+Version:    10.36
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,6 +51,18 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# Fix a possible NULL pointer dereference in auto_possessify(),
+# upstream bug #2686, in upstream after 10.36
+Patch1:     pcre2-10.36-Get-rid-of-gcc-fanalyzer-error-though-it-was-probabl.patch
+# Fix misparsing long numbers as a backreference and a number without
+# a closing bracket as a quantifier, upstream bug #2690, in upstream after
+# 10.36
+Patch2:     pcre2-10.36-Fix-some-numerical-checking-bugs-Bugzilla-2690.patch
+# Fix a mismatch if \K was involved in a recursion, in upstream after 10.36
+Patch3:     pcre2-10.36-Fix-K-within-recursion-bug-in-interpreter.patch
+# Restore single character repetition optimization in JIT, upstream bug #2698,
+# in upstream after 10.36
+Patch4:     pcre2-10.36-Restore-single-character-repetition-optimization-in-.patch
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -203,7 +215,7 @@ make %{?_smp_mflags} check VERBOSE=yes
 
 %files
 %{_libdir}/libpcre2-8.so.0*
-%{_libdir}/libpcre2-posix.so.3*
+%{_libdir}/libpcre2-posix.so.2*
 
 %files utf16
 %{_libdir}/libpcre2-16.so.0*
@@ -254,12 +266,6 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
-* Tue Jun 15 2021 Lukas Javorsky <ljavorsk@redhat.com> - 10.37-1
-- Rebase to the 10.37
-- libpcre2-posix.so.2* renamed to libpcre2-posix.so.3*
-- Patches upstreamed: Patch 1,2,3,4
-- Resolves: rhbz#1970765
-
 * Fri Feb 19 2021 Petr Pisar <ppisar@redhat.com> - 10.36-4
 - Fix a mismatch if \K was involved in a recursion
 - Restore single character repetition optimization in JIT (upstream bug #2698)
