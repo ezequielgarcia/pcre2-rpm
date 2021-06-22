@@ -62,6 +62,7 @@ BuildRequires:  make
 BuildRequires:  readline-devel
 %endif
 BuildRequires:  sed
+BuildRequires:  pcre2
 Requires:       %{name}-syntax = %{version}-%{release}
 Provides:       bundled(sljit)
 
@@ -198,11 +199,16 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 # These are handled by %%doc in %%files
 rm -rf $RPM_BUILD_ROOT%{_docdir}/pcre2
 
+# Copy old soname %{_libdir}/libpcre2-posix.so.2
+cp %{_libdir}/libpcre2-posix.so.2* $RPM_BUILD_ROOT%{_libdir}
+
 %check
 make %{?_smp_mflags} check VERBOSE=yes
 
 %files
 %{_libdir}/libpcre2-8.so.0*
+# We can delete this after rebuilding all dependent packages
+%{_libdir}/libpcre2-posix.so.2*
 %{_libdir}/libpcre2-posix.so.3*
 
 %files utf16
