@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.37
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -62,7 +62,6 @@ BuildRequires:  make
 BuildRequires:  readline-devel
 %endif
 BuildRequires:  sed
-BuildRequires:  pcre2
 Requires:       %{name}-syntax = %{version}-%{release}
 Provides:       bundled(sljit)
 
@@ -199,16 +198,11 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 # These are handled by %%doc in %%files
 rm -rf $RPM_BUILD_ROOT%{_docdir}/pcre2
 
-# Copy old soname %{_libdir}/libpcre2-posix.so.2
-cp %{_libdir}/libpcre2-posix.so.2* $RPM_BUILD_ROOT%{_libdir}
-
 %check
 make %{?_smp_mflags} check VERBOSE=yes
 
 %files
 %{_libdir}/libpcre2-8.so.0*
-# We can delete this after rebuilding all dependent packages
-%{_libdir}/libpcre2-posix.so.2*
 %{_libdir}/libpcre2-posix.so.3*
 
 %files utf16
@@ -260,6 +254,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jul 15 2021 Lukas Javorsky <ljavorsk@redhat.com> - 10.37-3
+- Revert of copying the old posix library - After rebuilding all
+- dependend packages we don't need to backport the old library
+
 * Wed Jul 14 2021 Lukas Javorsky <ljavorsk@redhat.com> - 10.37-2
 - Release bump
 
