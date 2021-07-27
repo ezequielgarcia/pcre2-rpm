@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.37
-Release:    %{?rcversion:0.}3%{?rcversion:.%rcversion}%{?dist}.1
+Release:    %{?rcversion:0.}4%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,6 +51,11 @@ Source1:    https://ftp.pcre.org/pub/pcre/%{?rcversion:Testing/}%{name}-%{myvers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+
+# Upstream's patch (r1315 merged) https://bugs.exim.org/show_bug.cgi?id=2764
+# Fix invalid single character repetition in JIT
+Patch1:     pcre2-10.37-Fix-invalid-single-character-repetition-issues-in-JI.patch
+
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  coreutils
@@ -254,6 +259,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Tue Jul 27 2021 Lukas Javorsky <ljavorsk@redhat.com> - 10.37-4
+- Fix invalid single character repetition in JIT
+- Resolves: BZ#1985484
+
 * Thu Jul 22 2021 Fedora Release Engineering <releng@fedoraproject.org> - 10.37-3.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 

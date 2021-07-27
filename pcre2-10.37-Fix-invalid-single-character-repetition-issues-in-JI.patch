@@ -1,0 +1,74 @@
+From 68b518ae703afcc672071e2bf65e4600bb2f2bfb Mon Sep 17 00:00:00 2001
+From: zherczeg <zherczeg@6239d852-aaf2-0410-a92c-79f79f948069>
+Date: Fri, 4 Jun 2021 12:55:49 +0000
+Subject: [PATCH] Fix invalid single character repetition issues in JIT.
+
+git-svn-id: svn://vcs.pcre.org/pcre2/code/trunk@1315 6239d852-aaf2-0410-a92c-79f79f948069
+---
+ src/pcre2_jit_compile.c | 10 ++++++----
+ src/pcre2_jit_test.c    |  1 +
+
+diff --git a/src/pcre2_jit_compile.c b/src/pcre2_jit_compile.c
+index ae0d9a9..a3f7ebe 100644
+--- a/src/pcre2_jit_compile.c
++++ b/src/pcre2_jit_compile.c
+@@ -1236,15 +1236,16 @@ start:
+ 
+ return: current number of iterators enhanced with fast fail
+ */
+-static int detect_early_fail(compiler_common *common, PCRE2_SPTR cc, int *private_data_start, sljit_s32 depth, int start)
++static int detect_early_fail(compiler_common *common, PCRE2_SPTR cc, int *private_data_start,
++   sljit_s32 depth, int start, BOOL fast_forward_allowed)
+ {
+ PCRE2_SPTR begin = cc;
+ PCRE2_SPTR next_alt;
+ PCRE2_SPTR end;
+ PCRE2_SPTR accelerated_start;
++BOOL prev_fast_forward_allowed;
+ int result = 0;
+ int count;
+-BOOL fast_forward_allowed = TRUE;
+ 
+ SLJIT_ASSERT(*cc == OP_ONCE || *cc == OP_BRA || *cc == OP_CBRA);
+ SLJIT_ASSERT(*cc != OP_CBRA || common->optimized_cbracket[GET2(cc, 1 + LINK_SIZE)] != 0);
+@@ -1476,6 +1477,7 @@ do
+       case OP_CBRA:
+       end = cc + GET(cc, 1);
+ 
++      prev_fast_forward_allowed = fast_forward_allowed;
+       fast_forward_allowed = FALSE;
+       if (depth >= 4)
+         break;
+@@ -1484,7 +1486,7 @@ do
+       if (*end != OP_KET || (*cc == OP_CBRA && common->optimized_cbracket[GET2(cc, 1 + LINK_SIZE)] == 0))
+         break;
+ 
+-      count = detect_early_fail(common, cc, private_data_start, depth + 1, count);
++      count = detect_early_fail(common, cc, private_data_start, depth + 1, count, prev_fast_forward_allowed);
+ 
+       if (PRIVATE_DATA(cc) != 0)
+         common->private_data_ptrs[begin - common->start] = 1;
+@@ -13657,7 +13659,7 @@ memset(common->private_data_ptrs, 0, total_length * sizeof(sljit_s32));
+ private_data_size = common->cbra_ptr + (re->top_bracket + 1) * sizeof(sljit_sw);
+ 
+ if ((re->overall_options & PCRE2_ANCHORED) == 0 && (re->overall_options & PCRE2_NO_START_OPTIMIZE) == 0 && !common->has_skip_in_assert_back)
+-  detect_early_fail(common, common->start, &private_data_size, 0, 0);
++  detect_early_fail(common, common->start, &private_data_size, 0, 0, TRUE);
+ 
+ set_private_data_ptrs(common, &private_data_size, ccend);
+ 
+diff --git a/src/pcre2_jit_test.c b/src/pcre2_jit_test.c
+index d935887..f748016 100644
+--- a/src/pcre2_jit_test.c
++++ b/src/pcre2_jit_test.c
+@@ -351,6 +351,7 @@ static struct regression_test_case regression_test_cases[] = {
+ 	{ MU, A, 0, 0, ".[ab]*a", "xxa" },
+ 	{ MU, A, 0, 0, ".[ab]?.", "xx" },
+ 	{ MU, A, 0, 0, "_[ab]+_*a", "_aa" },
++	{ MU, A, 0, 0, "#(A+)#\\d+", "#A#A#0" },
+ 
+ 	/* Bracket repeats with limit. */
+ 	{ MU, A, 0, 0, "(?:(ab){2}){5}M", "abababababababababababM" },
+-- 
+2.31.1
+
