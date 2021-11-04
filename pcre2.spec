@@ -8,7 +8,7 @@
 # This is stable release:
 #%%global rcversion RC1
 Name:       pcre2
-Version:    10.38
+Version:    10.39
 Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
@@ -255,6 +255,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Nov 01 2021 Lukas Javorsky <ljavorsk@redhat.com> - 10.39-1
+- Rebase to the 10.39
+
 * Mon Oct 04 2021 Lukas Javorsky <ljavorsk@redhat.com> - 10.38-1
 - Rebase to the 10.38
 - Patch 1 upstreamed
