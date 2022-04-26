@@ -8,8 +8,8 @@
 # This is stable release:
 #%%global rcversion RC1
 Name:       pcre2
-Version:    10.39
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}.1
+Version:    10.40
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -255,6 +255,10 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Mon Apr 25 2022 Lukas Javorsky <ljavorsk@redhat.com> - 10.40-1
+- Rebase to the 10.40
+- Resolves multiple Out-of-bounds read errors
+
 * Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - 10.39-1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
