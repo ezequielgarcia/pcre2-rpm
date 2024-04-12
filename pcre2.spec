@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.43
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,6 +51,12 @@ Source1:    https://github.com/PCRE2Project/pcre2/releases/download/pcre2-%{vers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
+# https://github.com/PCRE2Project/pcre2/issues/402
+# https://github.com/PCRE2Project/pcre2/pull/403
+# fix crashes evaluating regexes in multi-threaded contexts
+# we'll take the minimal backport for now, we'll get the full
+# jit compiler update in 10.44
+Patch1:     403.patch
 
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -255,6 +261,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Fri Apr 12 2024 Adam Williamson <awilliam@redhat.com> - 10.43-2
+- Backport PR #403 to fix crashes in multi-thread contexts
+
 * Mon Feb 19 2024 Lukas Javorsky <ljavorsk@redhat.com> - 10.43-1
 - Rebase to version 10.43
 
