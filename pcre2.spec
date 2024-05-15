@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.43
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}.1
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -141,6 +141,8 @@ Summary:    Auxiliary utilities for %{name}
 # pcre2test:   BSD
 License:    BSD-3-Clause
 Requires:   %{name}%{_isa} = %{version}-%{release}
+Requires:   %{name}-utf32 = %{version}-%{release}
+Requires:   %{name}-utf16 = %{version}-%{release}
 
 %description tools
 Utilities demonstrating PCRE2 capabilities like pcre2grep or pcre2test.
@@ -261,6 +263,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed May 15 2024 Lukas Javorsky <ljavorsk@redhat.com> - 10.43-2.1
+- Explicitly require uft subpackages in tools subpackage
+
 * Fri Apr 12 2024 Adam Williamson <awilliam@redhat.com> - 10.43-2
 - Backport PR #403 to fix crashes in multi-thread contexts
 
