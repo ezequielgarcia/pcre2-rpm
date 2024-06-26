@@ -8,8 +8,8 @@
 # This is stable release:
 #%%global rcversion RC1
 Name:       pcre2
-Version:    10.43
-Release:    %{?rcversion:0.}2%{?rcversion:.%rcversion}%{?dist}.1
+Version:    10.44
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -51,12 +51,9 @@ Source1:    https://github.com/PCRE2Project/pcre2/releases/download/pcre2-%{vers
 Source2:    https://ftp.pcre.org/pub/pcre/Public-Key
 # Do no set RPATH if libdir is not /usr/lib
 Patch0:     pcre2-10.10-Fix-multilib.patch
-# https://github.com/PCRE2Project/pcre2/issues/402
-# https://github.com/PCRE2Project/pcre2/pull/403
-# fix crashes evaluating regexes in multi-threaded contexts
-# we'll take the minimal backport for now, we'll get the full
-# jit compiler update in 10.44
-Patch1:     403.patch
+# Upstream commit: https://github.com/PCRE2Project/pcre2/commit/57906628d7babd27c01eb1c085d3e0cdd512189a
+# Fixes the failing tests on 32-bit arch (i686)
+Patch1:     pcre2-10.44-pcre2test-memory-reports-only-compiled-memory-usage.patch
 
 BuildRequires:  autoconf
 BuildRequires:  automake
@@ -263,6 +260,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Wed Jun 26 2024 Lukas Javorsky <ljavorsk@redhat.com> - 10.44-1
+- Rebase to version 10.44
+
 * Wed May 15 2024 Lukas Javorsky <ljavorsk@redhat.com> - 10.43-2.1
 - Explicitly require uft subpackages in tools subpackage
 
