@@ -9,7 +9,7 @@
 #%%global rcversion RC1
 Name:       pcre2
 Version:    10.44
-Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}
+Release:    %{?rcversion:0.}1%{?rcversion:.%rcversion}%{?dist}.1
 %global     myversion %{version}%{?rcversion:-%rcversion}
 Summary:    Perl-compatible regular expression library
 # the library:                          BSD with exceptions
@@ -260,6 +260,9 @@ make %{?_smp_mflags} check VERBOSE=yes
 %{_mandir}/man1/pcre2test.*
 
 %changelog
+* Thu Jul 18 2024 Fedora Release Engineering <releng@fedoraproject.org> - 10.44-1.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
+
 * Wed Jun 26 2024 Lukas Javorsky <ljavorsk@redhat.com> - 10.44-1
 - Rebase to version 10.44
 
